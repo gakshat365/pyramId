@@ -1,11 +1,27 @@
--- ====================================
--- VOUGHT PYRAMID SCHEME DATABASE POPULATION
--- Team 66 - Phase 2 (UPDATED - Multi-Universe Hierarchies)
--- ====================================
+-- ============================================================
+-- 0. RESET DATABASE (CLEAN SLATE)
+-- ============================================================
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
--- ====================================
--- 1. POPULATE UNIVERSE TABLE (Explicit IDs)
--- ====================================
+TRUNCATE TABLE PortalCalibration;
+TRUNCATE TABLE Portals;
+TRUNCATE TABLE MarketingCampaignAdditional;
+TRUNCATE TABLE MarketingCampaign_MembersInvolved;
+TRUNCATE TABLE MarketingCampaign;
+TRUNCATE TABLE RecruitmentEvent;
+TRUNCATE TABLE Transaction;
+TRUNCATE TABLE Member;
+TRUNCATE TABLE Employee;
+TRUNCATE TABLE Participant;
+TRUNCATE TABLE InvestmentTier;
+TRUNCATE TABLE Universe;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================================
+-- 1. POPULATE UNIVERSE TABLE
+-- ============================================================
 INSERT INTO Universe (universe_id, universe_name, status) VALUES 
 (1, 'Prime Universe', 'active'),
 (2, 'Alternate Earth-616', 'active'),
@@ -13,43 +29,33 @@ INSERT INTO Universe (universe_id, universe_name, status) VALUES
 (4, 'Golden Age Universe', 'active'),
 (5, 'Future Timeline 2087', 'inactive');
 
--- ====================================
--- 2. POPULATE INVESTMENT TIER TABLE (Updated Tier Ordering)
--- ====================================
+-- ============================================================
+-- 2. POPULATE INVESTMENT TIER TABLE
+-- ============================================================
 INSERT INTO InvestmentTier (tier_id, minimum_investment, commission_rate, max_recruits_allowed, tier_benefits) VALUES 
-(0, 5000000.00, 27.50, 7, 'Founder tier, revenue sharing model'),
-(1, 2500000.00, 25.00, 7, 'Master tier, secondary commission streams'),
-(2, 1000000.00, 22.50, 7, 'Diamond tier, international expansion rights'),
-(3, 500000.00, 20.00, 7, 'Platinum tier, unlimited recruitment bonuses'),
-(4, 250000.00, 18.00, 7, 'Elite tier, franchise opportunities'),
-(5, 100000.00, 15.00, 7, 'Executive status, personal account manager'),
-(6, 50000.00, 12.50, 7, 'VIP status, marketing materials included'),
-(7, 25000.00, 10.00, 7, 'Priority support, bonus commissions'),
-(8, 10000.00, 7.50, 7, 'Enhanced access, weekly payouts'),
-(9, 5000.00, 5.00, 7, 'Basic access, standard commission');
+(1, 5000000.00, 27.50, 7, 'Founder tier, revenue sharing model'),
+(2, 2500000.00, 25.00, 7, 'Master tier, secondary commission streams'),
+(3, 1000000.00, 22.50, 7, 'Diamond tier, international expansion rights'),
+(4, 500000.00, 20.00, 7, 'Platinum tier, unlimited recruitment bonuses'),
+(5, 250000.00, 18.00, 7, 'Elite tier, franchise opportunities'),
+(6, 100000.00, 15.00, 7, 'Executive status, personal account manager'),
+(7, 50000.00, 12.50, 7, 'VIP status, marketing materials included'),
+(8, 25000.00, 10.00, 7, 'Priority support, bonus commissions'),
+(9, 10000.00, 7.50, 7, 'Enhanced access, weekly payouts'),
+(10, 5000.00, 5.00, 7, 'Basic access, standard commission');
 
----
--- ====================================
+-- ============================================================
 -- 3. POPULATE PARTICIPANT TABLE
--- NOTE: Corrected Golden Age Universe IDs 131-138 to align with Member table usage.
--- The four founder/level 0 members of Universe 4 are IDs 135-138 in the Participant table.
--- The subsequent four level 1 recruiters are IDs 139-142.
--- The original Participant IDs 131-134 were redundant based on the Member table.
--- ====================================
+-- ============================================================
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES 
--- PRIME UNIVERSE (1) - Corporate Leadership
 (1, 'Anthony', 'Stark', '1970-05-29', 1, 'Earth', 'USA', 1),
 (2, 'Natasha', 'Romanoff', '1984-11-22', 1, 'Earth', 'Russia', 2),
 (3, 'Bruce', 'Banner', '1969-12-18', 1, 'Earth', 'USA', 3),
 (4, 'Steve', 'Rogers', '1918-07-04', 1, 'Earth', 'USA', 1),
-
--- PRIME UNIVERSE - Level 1 Recruiters (4 recruiters)
 (5, 'Clint', 'Barton', '1975-01-15', 1, 'Earth', 'USA', 4),
 (6, 'Thor', 'Odinson', '1965-03-01', 1, 'Asgard', 'Norway', 5),
 (7, 'Peter', 'Parker', '2001-08-10', 1, 'Earth', 'USA', 6),
 (8, 'Carol', 'Danvers', '1980-06-17', 1, 'Earth', 'USA', 7),
-
--- PRIME UNIVERSE - Level 2 Members (recruited by Level 1, 3 per recruiter = 12 members)
 (9, 'Scott', 'Lang', '1989-11-04', 1, 'Earth', 'USA', 8),
 (10, 'Wanda', 'Maximoff', '1989-04-17', 1, 'Earth', 'Slovenia', 9),
 (11, 'Vision', 'Synthezoid', '2015-05-01', 1, 'Earth', 'USA', 10),
@@ -62,8 +68,6 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (18, 'Harley', 'Keener', '2012-06-15', 1, 'Earth', 'USA', 13),
 (19, 'Morgan', 'Stark', '2019-04-08', 1, 'Earth', 'USA', 1),
 (20, 'Kate', 'Bishop', '2001-01-22', 1, 'Earth', 'USA', 14),
-
--- PRIME UNIVERSE - Level 3 Members (recruited by Level 2, 2 per recruiter = 24 members)
 (21, 'America', 'Chavez', '2003-11-11', 1, 'Earth', 'USA', 15),
 (22, 'Suri', 'Patel', '1988-07-19', 1, 'Earth', 'India', 16),
 (23, 'Aditya', 'Kumar', '1992-03-05', 1, 'Earth', 'India', 17),
@@ -88,34 +92,26 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (42, 'Isha', 'Kapoor', '1992-04-12', 1, 'Earth', 'India', 36),
 (43, 'Vishal', 'Yadav', '1988-08-28', 1, 'Earth', 'India', 37),
 (44, 'Ritika', 'Agarwal', '1995-06-01', 1, 'Earth', 'India', 38),
-
--- ALTERNATE EARTH-616 (2) - Corporate Leadership
 (45, 'Miles', 'Morales', '2000-03-20', 2, 'Earth', 'USA', 39),
 (46, 'Gwen', 'Stacy', '2001-11-04', 2, 'Earth', 'USA', 40),
-(47, 'Miguel', 'OHara', '1992-07-15', 2, 'Earth', 'Spain', 41),
+(47, 'Miguel', 'O''Hara', '1992-07-15', 2, 'Earth', 'Spain', 41),
 (48, 'Jessica', 'Jones', '1989-12-10', 2, 'Earth', 'USA', 42),
-
--- ALTERNATE EARTH-616 - Level 1 Recruiters (4 recruiters)
 (49, 'Luke', 'Cage', '1986-09-01', 2, 'Earth', 'USA', 43),
 (50, 'Danny', 'Rand', '1988-02-27', 2, 'Earth', 'USA', 44),
 (51, 'Colleen', 'Wing', '1990-06-14', 2, 'Earth', 'China', 45),
 (52, 'Shang-Chi', 'Zhang', '1991-09-03', 2, 'Earth', 'China', 46),
-
--- ALTERNATE EARTH-616 - Level 2 Members (12 members)
 (53, 'Ayo', 'Adeyemi', '1987-04-22', 2, 'Earth', 'Nigeria', 47),
-(54, 'TChalla', 'Udaku', '1977-11-16', 2, 'Wakanda', 'Fictional Nation', 48),
+(54, 'T''Challa', 'Udaku', '1977-11-16', 2, 'Wakanda', 'Fictional Nation', 48),
 (55, 'Nakia', 'Bahadir', '1989-05-08', 2, 'Wakanda', 'Fictional Nation', 48),
 (56, 'Okoye', 'Adeyemi', '1984-12-02', 2, 'Wakanda', 'Fictional Nation', 48),
 (57, 'Erik', 'Killmonger', '1986-01-15', 2, 'Wakanda', 'Fictional Nation', 48),
-(58, 'WKabi', 'Rebel', '1985-03-20', 2, 'Wakanda', 'Fictional Nation', 48),
+(58, 'W''Kabi', 'Rebel', '1985-03-20', 2, 'Wakanda', 'Fictional Nation', 48),
 (59, 'Zuri', 'Warrior', '1975-07-10', 2, 'Wakanda', 'Fictional Nation', 48),
 (60, 'Shuri', 'Udaku', '2003-11-30', 2, 'Wakanda', 'Fictional Nation', 48),
-(61, 'MBaku', 'Chief', '1982-05-25', 2, 'Wakanda', 'Fictional Nation', 48),
+(61, 'M''Baku', 'Chief', '1982-05-25', 2, 'Wakanda', 'Fictional Nation', 48),
 (62, 'Ramonda', 'Queen', '1960-09-14', 2, 'Wakanda', 'Fictional Nation', 48),
 (63, 'James', 'Rupert', '1980-04-03', 2, 'Earth', 'UK', 49),
 (64, 'Sarah', 'Wilson', '1992-08-19', 2, 'Earth', 'USA', 50),
-
--- ALTERNATE EARTH-616 - Level 3 Members (24 members)
 (65, 'Ava', 'Starr', '1995-02-11', 2, 'Earth', 'USA', 51),
 (66, 'Casper', 'Hayes', '1994-06-17', 2, 'Earth', 'USA', 52),
 (67, 'Jordan', 'Price', '1996-09-08', 2, 'Earth', 'USA', 53),
@@ -140,20 +136,14 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (86, 'Christopher', 'Young', '1995-05-17', 2, 'Earth', 'USA', 72),
 (87, 'Amelia', 'King', '1999-08-02', 2, 'Earth', 'USA', 73),
 (88, 'David', 'Wright', '1993-11-23', 2, 'Earth', 'USA', 74),
-
--- DARK DIMENSION (3) - Corporate Leadership
 (89, 'Strange', 'Doctor', '1963-11-18', 3, 'Earth', 'USA', 75),
 (90, 'Mordo', 'Baron', '1960-07-22', 3, 'Earth', 'Transylvania', 76),
 (91, 'Wong', 'Master', '1965-01-10', 3, 'Earth', 'China', 77),
 (92, 'Clea', 'Strange', '1985-03-15', 3, 'Dark Dimension', 'Mystical Realm', 78),
-
--- DARK DIMENSION - Level 1 Recruiters (4 recruiters)
 (93, 'Kaecilius', 'Master', '1975-09-05', 3, 'Dark Dimension', 'Mystical Realm', 79),
 (94, 'Zealot', 'Follower', '1988-02-14', 3, 'Dark Dimension', 'Mystical Realm', 80),
 (95, 'Dormammu', 'Entity', '1970-06-01', 3, 'Dark Dimension', 'Mystical Realm', 81),
 (96, 'Astrid', 'Mystical', '1992-04-22', 3, 'Dark Dimension', 'Mystical Realm', 82),
-
--- DARK DIMENSION - Level 2 Members (12 members)
 (97, 'Agamotto', 'Eye', '1980-08-10', 3, 'Dark Dimension', 'Mystical Realm', 83),
 (98, 'Kamar-Taj', 'Sorcerer', '1975-12-19', 3, 'Earth', 'Nepal', 84),
 (99, 'Nictea', 'Mystic', '1987-01-27', 3, 'Dark Dimension', 'Mystical Realm', 85),
@@ -166,8 +156,6 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (106, 'Chthon', 'Elder', '1979-11-22', 3, 'Dark Dimension', 'Mystical Realm', 92),
 (107, 'Sheol', 'Realm', '1986-02-05', 3, 'Dark Dimension', 'Mystical Realm', 93),
 (108, 'Satannish', 'Devil', '1981-08-17', 3, 'Dark Dimension', 'Mystical Realm', 94),
-
--- DARK DIMENSION - Level 3 Members (24 members)
 (109, 'Rintrah', 'Beast', '1994-05-19', 3, 'Dark Dimension', 'Mystical Realm', 95),
 (110, 'Topaz', 'Creature', '1997-09-12', 3, 'Dark Dimension', 'Mystical Realm', 96),
 (111, 'Ebony', 'Maw', '1995-01-28', 3, 'Dark Dimension', 'Mystical Realm', 97),
@@ -190,21 +178,17 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (128, 'Minotaur', 'Labyrinth', '1997-06-27', 3, 'Dark Dimension', 'Mystical Realm', 114),
 (129, 'Centaur', 'Half', '1994-10-04', 3, 'Dark Dimension', 'Mystical Realm', 115),
 (130, 'Satyr', 'Pan', '1998-12-11', 3, 'Dark Dimension', 'Mystical Realm', 116),
-
--- GOLDEN AGE UNIVERSE (4) - Corporate Leadership
--- NOTE: IDs 131-134 removed/shifted to align with Member table starting at 135
-(135, 'Dinah', 'Lance', '1989-03-11', 4, 'Earth', 'USA', 121), -- Founder/Level 0 Member
-(136, 'Oliver', 'Queen', '1986-05-16', 4, 'Earth', 'USA', 122), 
-(137, 'Aquaman', 'Sea', '1984-11-01', 4, 'Atlantis', 'Oceanic Kingdom', 123), 
-(138, 'Wonder', 'Woman', '1990-08-22', 4, 'Themyscira', 'Greece', 124), 
-
--- GOLDEN AGE UNIVERSE - Level 1 Recruiters (4 recruiters) - These are the ones recruited by 135 (Dinah)
+-- ID 131 and 132 Added here to satisfy Member table Foreign Keys for Dark Dimension recruits
+(131, 'Shadow', 'Creature', '1999-01-01', 3, 'Dark Dimension', 'Mystical Realm', 117),
+(132, 'Dark', 'Minion', '1999-01-01', 3, 'Dark Dimension', 'Mystical Realm', 118),
+(135, 'Dinah', 'Lance', '1989-03-11', 4, 'Earth', 'USA', 121),
+(136, 'Oliver', 'Queen', '1986-05-16', 4, 'Earth', 'USA', 122),
+(137, 'Aquaman', 'Sea', '1984-11-01', 4, 'Atlantis', 'Oceanic Kingdom', 123),
+(138, 'Wonder', 'Woman', '1990-08-22', 4, 'Themyscira', 'Greece', 124),
 (139, 'Flash', 'Speed', '1991-01-14', 4, 'Earth', 'USA', 125),
 (140, 'Green', 'Lantern', '1988-09-27', 4, 'Earth', 'USA', 126),
 (141, 'Hawkgirl', 'Sky', '1993-04-03', 4, 'Earth', 'USA', 127),
 (142, 'Martian', 'Manhunter', '1987-06-19', 4, 'Mars', 'Red Planet', 128),
-
--- GOLDEN AGE UNIVERSE - Level 2 Members (12 members)
 (143, 'Black', 'Canary', '1992-12-08', 4, 'Earth', 'USA', 129),
 (144, 'Green', 'Arrow', '1989-08-25', 4, 'Earth', 'USA', 130),
 (145, 'Zatanna', 'Zatara', '1985-11-04', 4, 'Earth', 'USA', 131),
@@ -213,8 +197,6 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (148, 'Static', 'Shock', '1996-03-06', 4, 'Earth', 'USA', 134),
 (149, 'Cyborg', 'Tech', '1993-09-15', 4, 'Earth', 'USA', 135),
 (150, 'Beast', 'Boy', '1997-06-29', 4, 'Earth', 'USA', 136),
-
--- GOLDEN AGE UNIVERSE - Level 3 Members (24 members)
 (151, 'Raven', 'Shadow', '1995-01-08', 4, 'Earth', 'USA', 137),
 (152, 'Starfire', 'Alien', '1998-05-19', 4, 'Tamaran', 'Alien Planet', 138),
 (153, 'Robin', 'Sidekick', '1992-09-26', 4, 'Earth', 'USA', 139),
@@ -239,20 +221,14 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (172, 'Clayface', 'Mud', '1998-10-02', 4, 'Earth', 'USA', 158),
 (173, 'Bane', 'Venom', '1995-02-13', 4, 'Earth', 'USA', 159),
 (174, 'Ra', 'Guardian', '1999-04-20', 4, 'Earth', 'USA', 160),
-
--- FUTURE TIMELINE 2087 (5) - Corporate Leadership
 (175, 'Kamala', 'Khan', '2006-03-03', 5, 'Earth', 'USA', 161),
 (176, 'Sam', 'Alexander', '2004-07-14', 5, 'Earth', 'USA', 162),
 (177, 'Nova', 'Rider', '2005-11-08', 5, 'Earth', 'USA', 163),
 (178, 'Miles', 'Venom', '2007-02-20', 5, 'Earth', 'USA', 164),
-
--- FUTURE TIMELINE 2087 - Level 1 Recruiters (4 recruiters)
 (179, 'Peter', 'Age', '2003-01-25', 5, 'Earth', 'USA', 165),
 (180, 'Gwen', 'Ghost', '2008-09-10', 5, 'Earth', 'USA', 166),
 (181, 'Hobie', 'Punk', '2004-05-30', 5, 'Earth', 'USA', 167),
 (182, 'Jessica', 'Drew', '2006-12-15', 5, 'Earth', 'USA', 168),
-
--- FUTURE TIMELINE 2087 - Level 2 Members (12 members)
 (183, 'Ben', 'Reilly', '2005-04-08', 5, 'Earth', 'USA', 169),
 (184, 'Felicia', 'Hardy', '2007-08-22', 5, 'Earth', 'USA', 170),
 (185, 'Anya', 'Corazon', '2008-11-16', 5, 'Earth', 'USA', 171),
@@ -265,8 +241,6 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (192, 'Elektra', 'Natchios', '2005-01-23', 5, 'Earth', 'USA', 178),
 (193, 'Stick', 'Sword', '2007-07-05', 5, 'Earth', 'USA', 179),
 (194, 'Typhoid', 'Mary', '2006-04-30', 5, 'Earth', 'USA', 180),
-
--- FUTURE TIMELINE 2087 - Level 3 Members (24 members)
 (195, 'Bullseye', 'Target', '2008-08-17', 5, 'Earth', 'USA', 181),
 (196, 'Kingpin', 'Crime', '2009-11-25', 5, 'Earth', 'USA', 182),
 (197, 'Hand', 'Shadow', '2007-02-09', 5, 'Earth', 'USA', 183),
@@ -291,14 +265,12 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (216, 'Fish', 'Scale', '2009-05-15', 5, 'Earth', 'USA', 202),
 (217, 'Bird', 'Feather', '2006-07-23', 5, 'Earth', 'USA', 203),
 (218, 'Beast', 'Claw', '2008-01-31', 5, 'Earth', 'USA', 204),
-
--- Additional Employees
 (219, 'Strange', 'Doctor', '1963-11-18', 3, 'Earth', 'USA', 205),
 (220, 'Wong', 'Master', '1965-01-10', 3, 'Earth', 'China', 206);
 
--- ====================================
+-- ============================================================
 -- 4. POPULATE EMPLOYEE TABLE
--- ====================================
+-- ============================================================
 INSERT INTO Employee (participant_id, role, access_level, hire_date, salary, status) VALUES 
 (1, 'CEO', 10, '2015-01-01', 500000.00, 'active'),
 (2, 'Data Architect', 9, '2015-03-15', 350000.00, 'active'),
@@ -307,260 +279,216 @@ INSERT INTO Employee (participant_id, role, access_level, hire_date, salary, sta
 (219, 'Multiversal Systems Engineer', 8, '2018-01-01', 300000.00, 'active'),
 (220, 'Systems Engineer', 6, '2018-06-15', 180000.00, 'active');
 
--- ====================================
--- 5. POPULATE MEMBER TABLE - UPDATED TIERS
--- ====================================
+-- ============================================================
+-- 5. POPULATE MEMBER TABLE
+-- ============================================================
+-- Tier IDs are now 1-10. Tier Level in Member table updated to match.
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES 
--- PRIME UNIVERSE (1)
--- Tier 0 - Level 0 (Founder)
-(1, 0, '2015-01-01', 'active', NULL, 4),
+(1, 1, '2015-01-01', 'active', NULL, 4),
+(5, 2, '2015-05-01', 'active', 1, 3),
+(6, 2, '2015-06-15', 'active', 1, 3),
+(7, 2, '2015-07-20', 'active', 1, 3),
+(8, 2, '2015-08-01', 'active', 1, 3),
+(9, 3, '2015-09-10', 'active', 5, 2),
+(10, 3, '2015-09-15', 'active', 5, 2),
+(11, 3, '2015-10-01', 'active', 5, 2),
+(12, 3, '2015-10-05', 'active', 6, 2),
+(13, 3, '2015-10-10', 'active', 6, 2),
+(14, 3, '2015-10-20', 'active', 7, 2),
+(15, 3, '2015-10-25', 'active', 7, 2),
+(16, 3, '2015-11-01', 'active', 7, 2),
+(17, 3, '2015-11-05', 'active', 8, 2),
+(18, 3, '2015-11-10', 'active', 8, 2),
+(19, 3, '2015-11-15', 'active', 8, 2),
+(20, 3, '2015-11-20', 'active', 8, 2),
+(21, 4, '2015-12-01', 'active', 9, 0),
+(22, 4, '2015-12-05', 'active', 9, 0),
+(23, 4, '2015-12-10', 'active', 10, 0),
+(24, 4, '2015-12-15', 'active', 10, 0),
+(25, 4, '2015-12-20', 'active', 11, 0),
+(26, 4, '2016-01-05', 'active', 11, 0),
+(27, 4, '2016-01-10', 'active', 12, 0),
+(28, 4, '2016-01-15', 'active', 12, 0),
+(29, 4, '2016-01-20', 'active', 13, 0),
+(30, 4, '2016-01-25', 'active', 13, 0),
+(31, 4, '2016-02-01', 'active', 14, 0),
+(32, 4, '2016-02-05', 'active', 14, 0),
+(33, 4, '2016-02-10', 'active', 15, 0),
+(34, 4, '2016-02-15', 'active', 15, 0),
+(35, 4, '2016-02-20', 'active', 16, 0),
+(36, 4, '2016-02-25', 'active', 16, 0),
+(37, 4, '2016-03-01', 'active', 17, 0),
+(38, 4, '2016-03-05', 'active', 17, 0),
+(39, 4, '2016-03-10', 'active', 18, 0),
+(40, 4, '2016-03-15', 'active', 18, 0),
+(41, 4, '2016-03-20', 'active', 19, 0),
+(42, 4, '2016-03-25', 'active', 19, 0),
+(43, 4, '2016-04-01', 'active', 20, 0),
+(44, 4, '2016-04-05', 'active', 20, 0),
+(45, 1, '2016-02-01', 'active', NULL, 4),
+(49, 2, '2016-02-15', 'active', 45, 3),
+(50, 2, '2016-02-20', 'active', 45, 3),
+(51, 2, '2016-03-01', 'active', 45, 3),
+(52, 2, '2016-03-05', 'active', 45, 3),
+(53, 3, '2016-03-15', 'active', 49, 2),
+(54, 3, '2016-03-20', 'active', 49, 2),
+(55, 3, '2016-03-25', 'active', 49, 2),
+(56, 3, '2016-04-01', 'active', 50, 2),
+(57, 3, '2016-04-05', 'active', 50, 2),
+(58, 3, '2016-04-10', 'active', 51, 2),
+(59, 3, '2016-04-15', 'active', 51, 2),
+(60, 3, '2016-04-20', 'active', 51, 2),
+(61, 3, '2016-04-25', 'active', 52, 2),
+(62, 3, '2016-05-01', 'active', 52, 2),
+(63, 3, '2016-05-05', 'active', 52, 2),
+(64, 3, '2016-05-10', 'active', 52, 2),
+(65, 4, '2016-05-15', 'active', 53, 0),
+(66, 4, '2016-05-20', 'active', 53, 0),
+(67, 4, '2016-05-25', 'active', 54, 0),
+(68, 4, '2016-06-01', 'active', 54, 0),
+(69, 4, '2016-06-05', 'active', 55, 0),
+(70, 4, '2016-06-10', 'active', 55, 0),
+(71, 4, '2016-06-15', 'active', 56, 0),
+(72, 4, '2016-06-20', 'active', 56, 0),
+(73, 4, '2016-06-25', 'active', 57, 0),
+(74, 4, '2016-07-01', 'active', 57, 0),
+(75, 4, '2016-07-05', 'active', 58, 0),
+(76, 4, '2016-07-10', 'active', 58, 0),
+(77, 4, '2016-07-15', 'active', 59, 0),
+(78, 4, '2016-07-20', 'active', 59, 0),
+(79, 4, '2016-07-25', 'active', 60, 0),
+(80, 4, '2016-08-01', 'active', 60, 0),
+(81, 4, '2016-08-05', 'active', 61, 0),
+(82, 4, '2016-08-10', 'active', 61, 0),
+(83, 4, '2016-08-15', 'active', 62, 0),
+(84, 4, '2016-08-20', 'active', 62, 0),
+(85, 4, '2016-08-25', 'active', 63, 0),
+(86, 4, '2016-09-01', 'active', 63, 0),
+(87, 4, '2016-09-05', 'active', 64, 0),
+(88, 4, '2016-09-10', 'active', 64, 0),
+(89, 1, '2017-01-01', 'active', NULL, 4),
+(93, 2, '2017-01-15', 'active', 89, 3),
+(94, 2, '2017-02-01', 'active', 89, 3),
+(95, 2, '2017-02-15', 'active', 89, 3),
+(96, 2, '2017-03-01', 'active', 89, 3),
+(97, 3, '2017-03-15', 'active', 93, 2),
+(98, 3, '2017-03-20', 'active', 93, 2),
+(99, 3, '2017-03-25', 'active', 93, 2),
+(100, 3, '2017-04-01', 'active', 94, 2),
+(101, 3, '2017-04-05', 'active', 94, 2),
+(102, 3, '2017-04-10', 'active', 95, 2),
+(103, 3, '2017-04-15', 'active', 95, 2),
+(104, 3, '2017-04-20', 'active', 95, 2),
+(105, 3, '2017-04-25', 'active', 96, 2),
+(106, 3, '2017-05-01', 'active', 96, 2),
+(107, 3, '2017-05-05', 'active', 96, 2),
+(108, 3, '2017-05-10', 'active', 96, 2),
+(109, 4, '2017-05-15', 'active', 97, 0),
+(110, 4, '2017-05-20', 'active', 97, 0),
+(111, 4, '2017-05-25', 'active', 98, 0),
+(112, 4, '2017-06-01', 'active', 98, 0),
+(113, 4, '2017-06-05', 'active', 99, 0),
+(114, 4, '2017-06-10', 'active', 99, 0),
+(115, 4, '2017-06-15', 'active', 100, 0),
+(116, 4, '2017-06-20', 'active', 100, 0),
+(117, 4, '2017-06-25', 'active', 101, 0),
+(118, 4, '2017-07-01', 'active', 101, 0),
+(119, 4, '2017-07-05', 'active', 102, 0),
+(120, 4, '2017-07-10', 'active', 102, 0),
+(121, 4, '2017-07-15', 'active', 103, 0),
+(122, 4, '2017-07-20', 'active', 103, 0),
+(123, 4, '2017-07-25', 'active', 104, 0),
+(124, 4, '2017-08-01', 'active', 104, 0),
+(125, 4, '2017-08-05', 'active', 105, 0),
+(126, 4, '2017-08-10', 'active', 105, 0),
+(127, 4, '2017-08-15', 'active', 106, 0),
+(128, 4, '2017-08-20', 'active', 106, 0),
+(129, 4, '2017-08-25', 'active', 107, 0),
+(130, 4, '2017-09-01', 'active', 107, 0),
+(131, 4, '2017-09-05', 'active', 108, 0),
+(132, 4, '2017-09-10', 'active', 108, 0),
+(135, 1, '2018-01-01', 'active', NULL, 4),
+(139, 2, '2018-01-15', 'active', 135, 3),
+(140, 2, '2018-02-01', 'active', 135, 3),
+(141, 2, '2018-02-15', 'active', 135, 3),
+(142, 2, '2018-03-01', 'active', 135, 3),
+(143, 3, '2018-03-15', 'active', 139, 2),
+(144, 3, '2018-03-20', 'active', 139, 2),
+(145, 3, '2018-03-25', 'active', 139, 2),
+(146, 3, '2018-04-01', 'active', 140, 2),
+(147, 3, '2018-04-05', 'active', 140, 2),
+(148, 3, '2018-04-10', 'active', 141, 2),
+(149, 3, '2018-04-15', 'active', 141, 2),
+(150, 3, '2018-04-20', 'active', 141, 2),
+(151, 3, '2018-04-25', 'active', 142, 2),
+(152, 3, '2018-05-01', 'active', 142, 2),
+(153, 3, '2018-05-05', 'active', 142, 2),
+(154, 3, '2018-05-10', 'active', 142, 2),
+(155, 4, '2018-05-15', 'active', 143, 0),
+(156, 4, '2018-05-20', 'active', 143, 0),
+(157, 4, '2018-05-25', 'active', 144, 0),
+(158, 4, '2018-06-01', 'active', 144, 0),
+(159, 4, '2018-06-05', 'active', 145, 0),
+(160, 4, '2018-06-10', 'active', 145, 0),
+(161, 4, '2018-06-15', 'active', 146, 0),
+(162, 4, '2018-06-20', 'active', 146, 0),
+(163, 4, '2018-06-25', 'active', 147, 0),
+(164, 4, '2018-07-01', 'active', 147, 0),
+(165, 4, '2018-07-05', 'active', 148, 0),
+(166, 4, '2018-07-10', 'active', 148, 0),
+(167, 4, '2018-07-15', 'active', 149, 0),
+(168, 4, '2018-07-20', 'active', 149, 0),
+(169, 4, '2018-07-25', 'active', 150, 0),
+(170, 4, '2018-08-01', 'active', 150, 0),
+(171, 4, '2018-08-05', 'active', 151, 0),
+(172, 4, '2018-08-10', 'active', 151, 0),
+(173, 4, '2018-08-15', 'active', 152, 0),
+(174, 4, '2018-08-20', 'active', 152, 0),
+(175, 4, '2018-08-25', 'active', 153, 0),
+(176, 4, '2018-09-01', 'active', 153, 0),
+(177, 4, '2018-09-05', 'active', 154, 0),
+(178, 4, '2018-09-10', 'active', 154, 0),
+(179, 1, '2020-01-01', 'active', NULL, 4),
+(183, 2, '2020-01-15', 'active', 179, 3),
+(184, 2, '2020-02-01', 'active', 179, 3),
+(185, 2, '2020-02-15', 'active', 179, 3),
+(186, 2, '2020-03-01', 'active', 179, 3),
+(187, 3, '2020-03-15', 'active', 183, 2),
+(188, 3, '2020-03-20', 'active', 183, 2),
+(189, 3, '2020-03-25', 'active', 183, 2),
+(190, 3, '2020-04-01', 'active', 184, 2),
+(191, 3, '2020-04-05', 'active', 184, 2),
+(192, 3, '2020-04-10', 'active', 185, 2),
+(193, 3, '2020-04-15', 'active', 185, 2),
+(194, 3, '2020-04-20', 'active', 185, 2),
+(195, 3, '2020-04-25', 'active', 186, 2),
+(196, 3, '2020-05-01', 'active', 186, 2),
+(197, 3, '2020-05-05', 'active', 186, 2),
+(198, 3, '2020-05-10', 'active', 186, 2),
+(199, 4, '2020-05-15', 'active', 187, 0),
+(200, 4, '2020-05-20', 'active', 187, 0),
+(201, 4, '2020-05-25', 'active', 188, 0),
+(202, 4, '2020-06-01', 'active', 188, 0),
+(203, 4, '2020-06-05', 'active', 189, 0),
+(204, 4, '2020-06-10', 'active', 189, 0),
+(205, 4, '2020-06-15', 'active', 190, 0),
+(206, 4, '2020-06-20', 'active', 190, 0),
+(207, 4, '2020-06-25', 'active', 191, 0),
+(208, 4, '2020-07-01', 'active', 191, 0),
+(209, 4, '2020-07-05', 'active', 192, 0),
+(210, 4, '2020-07-10', 'active', 192, 0),
+(211, 4, '2020-07-15', 'active', 193, 0),
+(212, 4, '2020-07-20', 'active', 193, 0),
+(213, 4, '2020-07-25', 'active', 194, 0),
+(214, 4, '2020-08-01', 'active', 194, 0),
+(215, 4, '2020-08-05', 'active', 195, 0),
+(216, 4, '2020-08-10', 'active', 195, 0),
+(217, 4, '2020-08-15', 'active', 196, 0),
+(218, 4, '2020-08-20', 'active', 196, 0);
 
--- Tier 1 - Level 1 (4 recruiters)
-(5, 1, '2015-05-01', 'active', 1, 3),
-(6, 1, '2015-06-15', 'active', 1, 3),
-(7, 1, '2015-07-20', 'active', 1, 3),
-(8, 1, '2015-08-01', 'active', 1, 3),
-
--- Tier 2 - Level 2 (12 members)
-(9, 2, '2015-09-10', 'active', 5, 2),
-(10, 2, '2015-09-15', 'active', 5, 2),
-(11, 2, '2015-10-01', 'active', 5, 2),
-(12, 2, '2015-10-05', 'active', 6, 2),
-(13, 2, '2015-10-10', 'active', 6, 2),
-(14, 2, '2015-10-20', 'active', 7, 2),
-(15, 2, '2015-10-25', 'active', 7, 2),
-(16, 2, '2015-11-01', 'active', 7, 2),
-(17, 2, '2015-11-05', 'active', 8, 2),
-(18, 2, '2015-11-10', 'active', 8, 2),
-(19, 2, '2015-11-15', 'active', 8, 2),
-(20, 2, '2015-11-20', 'active', 8, 2),
-
--- Tier 3 - Level 3 (24 members)
-(21, 3, '2015-12-01', 'active', 9, 0),
-(22, 3, '2015-12-05', 'active', 9, 0),
-(23, 3, '2015-12-10', 'active', 10, 0),
-(24, 3, '2015-12-15', 'active', 10, 0),
-(25, 3, '2015-12-20', 'active', 11, 0),
-(26, 3, '2016-01-05', 'active', 11, 0),
-(27, 3, '2016-01-10', 'active', 12, 0),
-(28, 3, '2016-01-15', 'active', 12, 0),
-(29, 3, '2016-01-20', 'active', 13, 0),
-(30, 3, '2016-01-25', 'active', 13, 0),
-(31, 3, '2016-02-01', 'active', 14, 0),
-(32, 3, '2016-02-05', 'active', 14, 0),
-(33, 3, '2016-02-10', 'active', 15, 0),
-(34, 3, '2016-02-15', 'active', 15, 0),
-(35, 3, '2016-02-20', 'active', 16, 0),
-(36, 3, '2016-02-25', 'active', 16, 0),
-(37, 3, '2016-03-01', 'active', 17, 0),
-(38, 3, '2016-03-05', 'active', 17, 0),
-(39, 3, '2016-03-10', 'active', 18, 0),
-(40, 3, '2016-03-15', 'active', 18, 0),
-(41, 3, '2016-03-20', 'active', 19, 0),
-(42, 3, '2016-03-25', 'active', 19, 0),
-(43, 3, '2016-04-01', 'active', 20, 0),
-(44, 3, '2016-04-05', 'active', 20, 0),
-
--- ALTERNATE EARTH-616 (2)
--- Tier 0 - Level 0 (Founder)
-(45, 0, '2016-02-01', 'active', NULL, 4),
-
--- Tier 1 - Level 1 (4 recruiters)
-(49, 1, '2016-02-15', 'active', 45, 3),
-(50, 1, '2016-02-20', 'active', 45, 3),
-(51, 1, '2016-03-01', 'active', 45, 3),
-(52, 1, '2016-03-05', 'active', 45, 3),
-
--- Tier 2 - Level 2 (12 members)
-(53, 2, '2016-03-15', 'active', 49, 2),
-(54, 2, '2016-03-20', 'active', 49, 2),
-(55, 2, '2016-03-25', 'active', 49, 2),
-(56, 2, '2016-04-01', 'active', 50, 2),
-(57, 2, '2016-04-05', 'active', 50, 2),
-(58, 2, '2016-04-10', 'active', 51, 2),
-(59, 2, '2016-04-15', 'active', 51, 2),
-(60, 2, '2016-04-20', 'active', 51, 2),
-(61, 2, '2016-04-25', 'active', 52, 2),
-(62, 2, '2016-05-01', 'active', 52, 2),
-(63, 2, '2016-05-05', 'active', 52, 2),
-(64, 2, '2016-05-10', 'active', 52, 2),
-
--- Tier 3 - Level 3 (24 members)
-(65, 3, '2016-05-15', 'active', 53, 0),
-(66, 3, '2016-05-20', 'active', 53, 0),
-(67, 3, '2016-05-25', 'active', 54, 0),
-(68, 3, '2016-06-01', 'active', 54, 0),
-(69, 3, '2016-06-05', 'active', 55, 0),
-(70, 3, '2016-06-10', 'active', 55, 0),
-(71, 3, '2016-06-15', 'active', 56, 0),
-(72, 3, '2016-06-20', 'active', 56, 0),
-(73, 3, '2016-06-25', 'active', 57, 0),
-(74, 3, '2016-07-01', 'active', 57, 0),
-(75, 3, '2016-07-05', 'active', 58, 0),
-(76, 3, '2016-07-10', 'active', 58, 0),
-(77, 3, '2016-07-15', 'active', 59, 0),
-(78, 3, '2016-07-20', 'active', 59, 0),
-(79, 3, '2016-07-25', 'active', 60, 0),
-(80, 3, '2016-08-01', 'active', 60, 0),
-(81, 3, '2016-08-05', 'active', 61, 0),
-(82, 3, '2016-08-10', 'active', 61, 0),
-(83, 3, '2016-08-15', 'active', 62, 0),
-(84, 3, '2016-08-20', 'active', 62, 0),
-(85, 3, '2016-08-25', 'active', 63, 0),
-(86, 3, '2016-09-01', 'active', 63, 0),
-(87, 3, '2016-09-05', 'active', 64, 0),
-(88, 3, '2016-09-10', 'active', 64, 0),
-
--- DARK DIMENSION (3)
--- Tier 0 - Level 0 (Founder)
-(89, 0, '2017-01-01', 'active', NULL, 4),
-
--- Tier 1 - Level 1 (4 recruiters)
-(93, 1, '2017-01-15', 'active', 89, 3),
-(94, 1, '2017-02-01', 'active', 89, 3),
-(95, 1, '2017-02-15', 'active', 89, 3),
-(96, 1, '2017-03-01', 'active', 89, 3),
-
--- Tier 2 - Level 2 (12 members)
-(97, 2, '2017-03-15', 'active', 93, 2),
-(98, 2, '2017-03-20', 'active', 93, 2),
-(99, 2, '2017-03-25', 'active', 93, 2),
-(100, 2, '2017-04-01', 'active', 94, 2),
-(101, 2, '2017-04-05', 'active', 94, 2),
-(102, 2, '2017-04-10', 'active', 95, 2),
-(103, 2, '2017-04-15', 'active', 95, 2),
-(104, 2, '2017-04-20', 'active', 95, 2),
-(105, 2, '2017-04-25', 'active', 96, 2),
-(106, 2, '2017-05-01', 'active', 96, 2),
-(107, 2, '2017-05-05', 'active', 96, 2),
-(108, 2, '2017-05-10', 'active', 96, 2),
-
--- Tier 3 - Level 3 (24 members)
-(109, 3, '2017-05-15', 'active', 97, 0),
-(110, 3, '2017-05-20', 'active', 97, 0),
-(111, 3, '2017-05-25', 'active', 98, 0),
-(112, 3, '2017-06-01', 'active', 98, 0),
-(113, 3, '2017-06-05', 'active', 99, 0),
-(114, 3, '2017-06-10', 'active', 99, 0),
-(115, 3, '2017-06-15', 'active', 100, 0),
-(116, 3, '2017-06-20', 'active', 100, 0),
-(117, 3, '2017-06-25', 'active', 101, 0),
-(118, 3, '2017-07-01', 'active', 101, 0),
-(119, 3, '2017-07-05', 'active', 102, 0),
-(120, 3, '2017-07-10', 'active', 102, 0),
-(121, 3, '2017-07-15', 'active', 103, 0),
-(122, 3, '2017-07-20', 'active', 103, 0),
-(123, 3, '2017-07-25', 'active', 104, 0),
-(124, 3, '2017-08-01', 'active', 104, 0),
-(125, 3, '2017-08-05', 'active', 105, 0),
-(126, 3, '2017-08-10', 'active', 105, 0),
-(127, 3, '2017-08-15', 'active', 106, 0),
-(128, 3, '2017-08-20', 'active', 106, 0),
-(129, 3, '2017-08-25', 'active', 107, 0),
-(130, 3, '2017-09-01', 'active', 107, 0),
-(131, 3, '2017-09-05', 'active', 108, 0),
-(132, 3, '2017-09-10', 'active', 108, 0),
-
--- GOLDEN AGE UNIVERSE (4)
--- Tier 0 - Level 0 (Founder)
-(135, 0, '2018-01-01', 'active', NULL, 4),
-
--- Tier 1 - Level 1 (4 recruiters)
-(139, 1, '2018-01-15', 'active', 135, 3),
-(140, 1, '2018-02-01', 'active', 135, 3),
-(141, 1, '2018-02-15', 'active', 135, 3),
-(142, 1, '2018-03-01', 'active', 135, 3),
-
--- Tier 2 - Level 2 (12 members)
-(143, 2, '2018-03-15', 'active', 139, 2),
-(144, 2, '2018-03-20', 'active', 139, 2),
-(145, 2, '2018-03-25', 'active', 139, 2),
-(146, 2, '2018-04-01', 'active', 140, 2),
-(147, 2, '2018-04-05', 'active', 140, 2),
-(148, 2, '2018-04-10', 'active', 141, 2),
-(149, 2, '2018-04-15', 'active', 141, 2),
-(150, 2, '2018-04-20', 'active', 141, 2),
-(151, 2, '2018-04-25', 'active', 142, 2),
-(152, 2, '2018-05-01', 'active', 142, 2),
-(153, 2, '2018-05-05', 'active', 142, 2),
-(154, 2, '2018-05-10', 'active', 142, 2),
-
--- Tier 3 - Level 3 (24 members)
-(155, 3, '2018-05-15', 'active', 143, 0),
-(156, 3, '2018-05-20', 'active', 143, 0),
-(157, 3, '2018-05-25', 'active', 144, 0),
-(158, 3, '2018-06-01', 'active', 144, 0),
-(159, 3, '2018-06-05', 'active', 145, 0),
-(160, 3, '2018-06-10', 'active', 145, 0),
-(161, 3, '2018-06-15', 'active', 146, 0),
-(162, 3, '2018-06-20', 'active', 146, 0),
-(163, 3, '2018-06-25', 'active', 147, 0),
-(164, 3, '2018-07-01', 'active', 147, 0),
-(165, 3, '2018-07-05', 'active', 148, 0),
-(166, 3, '2018-07-10', 'active', 148, 0),
-(167, 3, '2018-07-15', 'active', 149, 0),
-(168, 3, '2018-07-20', 'active', 149, 0),
-(169, 3, '2018-07-25', 'active', 150, 0),
-(170, 3, '2018-08-01', 'active', 150, 0),
-(171, 3, '2018-08-05', 'active', 151, 0),
-(172, 3, '2018-08-10', 'active', 151, 0),
-(173, 3, '2018-08-15', 'active', 152, 0),
-(174, 3, '2018-08-20', 'active', 152, 0),
-(175, 3, '2018-08-25', 'active', 153, 0),
-(176, 3, '2018-09-01', 'active', 153, 0),
-(177, 3, '2018-09-05', 'active', 154, 0),
-(178, 3, '2018-09-10', 'active', 154, 0),
-
--- FUTURE TIMELINE 2087 (5)
--- Tier 0 - Level 0 (Founder)
-(179, 0, '2020-01-01', 'active', NULL, 4),
-
--- Tier 1 - Level 1 (4 recruiters)
-(183, 1, '2020-01-15', 'active', 179, 3),
-(184, 1, '2020-02-01', 'active', 179, 3),
-(185, 1, '2020-02-15', 'active', 179, 3),
-(186, 1, '2020-03-01', 'active', 179, 3),
-
--- Tier 2 - Level 2 (12 members)
-(187, 2, '2020-03-15', 'active', 183, 2),
-(188, 2, '2020-03-20', 'active', 183, 2),
-(189, 2, '2020-03-25', 'active', 183, 2),
-(190, 2, '2020-04-01', 'active', 184, 2),
-(191, 2, '2020-04-05', 'active', 184, 2),
-(192, 2, '2020-04-10', 'active', 185, 2),
-(193, 2, '2020-04-15', 'active', 185, 2),
-(194, 2, '2020-04-20', 'active', 185, 2),
-(195, 2, '2020-04-25', 'active', 186, 2),
-(196, 2, '2020-05-01', 'active', 186, 2),
-(197, 2, '2020-05-05', 'active', 186, 2),
-(198, 2, '2020-05-10', 'active', 186, 2),
-
--- Tier 3 - Level 3 (24 members)
-(199, 3, '2020-05-15', 'active', 187, 0),
-(200, 3, '2020-05-20', 'active', 187, 0),
-(201, 3, '2020-05-25', 'active', 188, 0),
-(202, 3, '2020-06-01', 'active', 188, 0),
-(203, 3, '2020-06-05', 'active', 189, 0),
-(204, 3, '2020-06-10', 'active', 189, 0),
-(205, 3, '2020-06-15', 'active', 190, 0),
-(206, 3, '2020-06-20', 'active', 190, 0),
-(207, 3, '2020-06-25', 'active', 191, 0),
-(208, 3, '2020-07-01', 'active', 191, 0),
-(209, 3, '2020-07-05', 'active', 192, 0),
-(210, 3, '2020-07-10', 'active', 192, 0),
-(211, 3, '2020-07-15', 'active', 193, 0),
-(212, 3, '2020-07-20', 'active', 193, 0),
-(213, 3, '2020-07-25', 'active', 194, 0),
-(214, 3, '2020-08-01', 'active', 194, 0),
-(215, 3, '2020-08-05', 'active', 195, 0),
-(216, 3, '2020-08-10', 'active', 195, 0),
-(217, 3, '2020-08-15', 'active', 196, 0),
-(218, 3, '2020-08-20', 'active', 196, 0);
-
-
--- ====================================
+-- ============================================================
 -- 6. POPULATE PORTALS TABLE
--- ====================================
+-- ============================================================
 INSERT INTO Portals (portal_id, source_universe_id, target_universe_id, engineer_id, status, cost) VALUES 
 (1, 1, 2, 220, 'active', 50000.00),
 (2, 2, 1, 220, 'active', 50000.00),
@@ -575,10 +503,9 @@ INSERT INTO Portals (portal_id, source_universe_id, target_universe_id, engineer
 (11, 2, 5, 219, 'active', 70000.00),
 (12, 5, 2, 219, 'active', 70000.00);
 
-
--- ====================================
+-- ============================================================
 -- 7. POPULATE PORTAL CALIBRATION TABLE
--- ====================================
+-- ============================================================
 INSERT INTO PortalCalibration (portal_id, calibration_code, engineer_id, calibration_timestamp) VALUES 
 (1, 'CAL-001-PRIME-ALT616-V1', 220, '2019-01-15 08:30:00'),
 (1, 'CAL-001-PRIME-ALT616-V2', 220, '2020-06-20 14:45:00'),
@@ -595,11 +522,10 @@ INSERT INTO PortalCalibration (portal_id, calibration_code, engineer_id, calibra
 (11, 'CAL-011-ALT616-FUTURE-V1', 219, '2020-08-20 11:15:00'),
 (12, 'CAL-012-FUTURE-ALT616-V1', 219, '2020-09-10 13:45:00');
 
--- ====================================
--- 8. POPULATE TRANSACTION TABLE (150+ transactions)
--- ====================================
+-- ============================================================
+-- 8. POPULATE TRANSACTION TABLE
+-- ============================================================
 INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES 
--- PRIME UNIVERSE Initial Investments
 (1, 1, 'investment', 5000000.00, '2015-01-15', 'completed'),
 (5, 5, 'investment', 1000000.00, '2015-05-05', 'completed'),
 (6, 6, 'investment', 1000000.00, '2015-06-10', 'completed'),
@@ -617,8 +543,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (18, 18, 'investment', 50000.00, '2015-12-01', 'completed'),
 (19, 19, 'investment', 50000.00, '2015-12-05', 'completed'),
 (20, 20, 'investment', 50000.00, '2015-12-10', 'completed'),
-
--- PRIME UNIVERSE Commission Payouts (Level 0 to Level 1)
 (1, 5, 'commission', 75000.00, '2015-06-01', 'completed'),
 (1, 6, 'commission', 75000.00, '2015-07-01', 'completed'),
 (1, 7, 'commission', 75000.00, '2015-08-01', 'completed'),
@@ -627,8 +551,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (1, 6, 'commission', 85000.00, '2015-08-01', 'completed'),
 (1, 7, 'commission', 85000.00, '2015-09-01', 'completed'),
 (1, 8, 'commission', 85000.00, '2015-10-01', 'completed'),
-
--- PRIME UNIVERSE Commission Cascades (Level 1 to Level 2)
 (5, 9, 'commission', 37500.00, '2015-10-01', 'completed'),
 (5, 10, 'commission', 37500.00, '2015-10-05', 'completed'),
 (5, 11, 'commission', 37500.00, '2015-10-10', 'completed'),
@@ -641,8 +563,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (8, 18, 'commission', 37500.00, '2015-11-20', 'completed'),
 (8, 19, 'commission', 37500.00, '2015-11-25', 'completed'),
 (8, 20, 'commission', 37500.00, '2015-12-01', 'completed'),
-
--- PRIME UNIVERSE Level 2 to Level 3 Commissions
 (9, 21, 'commission', 18750.00, '2015-12-10', 'completed'),
 (9, 22, 'commission', 18750.00, '2015-12-15', 'completed'),
 (10, 23, 'commission', 18750.00, '2015-12-20', 'completed'),
@@ -667,8 +587,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (19, 42, 'commission', 18750.00, '2016-04-01', 'completed'),
 (20, 43, 'commission', 18750.00, '2016-04-05', 'completed'),
 (20, 44, 'commission', 18750.00, '2016-04-10', 'completed'),
-
--- ALTERNATE EARTH-616 Initial Investments
 (45, 45, 'investment', 2500000.00, '2016-02-05', 'completed'),
 (49, 49, 'investment', 1000000.00, '2016-02-20', 'completed'),
 (50, 50, 'investment', 1000000.00, '2016-02-25', 'completed'),
@@ -686,14 +604,10 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (62, 62, 'investment', 250000.00, '2016-05-05', 'completed'),
 (63, 63, 'investment', 250000.00, '2016-05-10', 'completed'),
 (64, 64, 'investment', 250000.00, '2016-05-15', 'completed'),
-
--- ALTERNATE EARTH-616 Commissions (Level 0 to Level 1)
 (45, 49, 'commission', 187500.00, '2016-03-01', 'completed'),
 (45, 50, 'commission', 187500.00, '2016-03-01', 'completed'),
 (45, 51, 'commission', 187500.00, '2016-03-01', 'completed'),
 (45, 52, 'commission', 187500.00, '2016-03-01', 'completed'),
-
--- ALTERNATE EARTH-616 Commissions (Level 1 to Level 2)
 (49, 53, 'commission', 93750.00, '2016-04-01', 'completed'),
 (49, 54, 'commission', 93750.00, '2016-04-01', 'completed'),
 (49, 55, 'commission', 93750.00, '2016-04-01', 'completed'),
@@ -706,8 +620,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (52, 62, 'commission', 93750.00, '2016-04-15', 'completed'),
 (52, 63, 'commission', 93750.00, '2016-04-15', 'completed'),
 (52, 64, 'commission', 93750.00, '2016-04-15', 'completed'),
-
--- ALTERNATE EARTH-616 Level 2 to Level 3 Commissions
 (53, 65, 'commission', 46875.00, '2016-05-20', 'completed'),
 (53, 66, 'commission', 46875.00, '2016-05-20', 'completed'),
 (54, 67, 'commission', 46875.00, '2016-05-25', 'completed'),
@@ -732,8 +644,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (63, 86, 'commission', 46875.00, '2016-07-10', 'completed'),
 (64, 87, 'commission', 46875.00, '2016-07-15', 'completed'),
 (64, 88, 'commission', 46875.00, '2016-07-15', 'completed'),
-
--- DARK DIMENSION Initial Investments
 (89, 89, 'investment', 2500000.00, '2017-01-10', 'completed'),
 (93, 93, 'investment', 1000000.00, '2017-01-20', 'completed'),
 (94, 94, 'investment', 1000000.00, '2017-02-01', 'completed'),
@@ -751,8 +661,6 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (106, 106, 'investment', 250000.00, '2017-04-15', 'completed'),
 (107, 107, 'investment', 250000.00, '2017-04-20', 'completed'),
 (108, 108, 'investment', 250000.00, '2017-04-25', 'completed'),
-
--- DARK DIMENSION Commissions (all levels)
 (89, 93, 'commission', 225000.00, '2017-02-01', 'completed'),
 (89, 94, 'commission', 225000.00, '2017-02-05', 'completed'),
 (89, 95, 'commission', 225000.00, '2017-02-10', 'completed'),
@@ -769,43 +677,32 @@ INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount,
 (96, 106, 'commission', 112500.00, '2017-03-20', 'completed'),
 (96, 107, 'commission', 112500.00, '2017-03-20', 'completed'),
 (96, 108, 'commission', 112500.00, '2017-03-20', 'completed'),
-
--- GOLDEN AGE UNIVERSE Initial Investments
 (135, 135, 'investment', 5000000.00, '2018-01-05', 'completed'),
 (139, 139, 'investment', 1000000.00, '2018-01-20', 'completed'),
 (140, 140, 'investment', 1000000.00, '2018-02-01', 'completed'),
 (141, 141, 'investment', 1000000.00, '2018-02-15', 'completed'),
 (142, 142, 'investment', 1000000.00, '2018-03-01', 'completed'),
-
--- GOLDEN AGE UNIVERSE Commissions (Level 0 to Level 1)
 (135, 139, 'commission', 275000.00, '2018-02-01', 'completed'),
 (135, 140, 'commission', 275000.00, '2018-02-05', 'completed'),
 (135, 141, 'commission', 275000.00, '2018-02-10', 'completed'),
 (135, 142, 'commission', 275000.00, '2018-02-15', 'completed'),
-
--- FUTURE TIMELINE 2087 Initial Investments
 (179, 179, 'investment', 5000000.00, '2020-01-05', 'completed'),
 (183, 183, 'investment', 1000000.00, '2020-01-20', 'completed'),
 (184, 184, 'investment', 1000000.00, '2020-02-01', 'completed'),
 (185, 185, 'investment', 1000000.00, '2020-02-15', 'completed'),
 (186, 186, 'investment', 1000000.00, '2020-03-01', 'completed'),
-
--- FUTURE TIMELINE 2087 Commissions (Level 0 to Level 1)
 (179, 183, 'commission', 275000.00, '2020-02-01', 'completed'),
 (179, 184, 'commission', 275000.00, '2020-02-05', 'completed'),
 (179, 185, 'commission', 275000.00, '2020-02-10', 'completed'),
 (179, 186, 'commission', 275000.00, '2020-02-15', 'completed'),
-
--- Cross-Universe Portal Maintenance Costs
 (45, 49, 'portal_maintenance', 5000.00, '2019-02-01', 'completed'),
 (1, 89, 'portal_maintenance', 7500.00, '2019-03-15', 'completed'),
 (89, 135, 'portal_maintenance', 6000.00, '2020-06-10', 'completed');
 
--- ====================================
+-- ============================================================
 -- 9. POPULATE RECRUITMENT EVENT TABLE
--- ====================================
+-- ============================================================
 INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recruitment_method) VALUES 
--- PRIME UNIVERSE Recruitment Events
 (1, 5, '2015-05-01', 'direct_pitch'),
 (1, 6, '2015-06-15', 'referral'),
 (1, 7, '2015-07-20', 'conference_presentation'),
@@ -846,8 +743,6 @@ INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recrui
 (19, 42, '2016-04-01', 'referral'),
 (20, 43, '2016-04-05', 'direct_pitch'),
 (20, 44, '2016-04-10', 'conference_presentation'),
-
--- ALTERNATE EARTH-616 Recruitment Events
 (45, 49, '2016-02-15', 'direct_pitch'),
 (45, 50, '2016-02-20', 'referral'),
 (45, 51, '2016-03-01', 'direct_pitch'),
@@ -888,8 +783,6 @@ INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recrui
 (63, 86, '2016-09-01', 'referral'),
 (64, 87, '2016-09-05', 'direct_pitch'),
 (64, 88, '2016-09-10', 'conference_presentation'),
-
--- DARK DIMENSION Recruitment Events
 (89, 93, '2017-01-15', 'direct_pitch'),
 (89, 94, '2017-02-01', 'referral'),
 (89, 95, '2017-02-15', 'direct_pitch'),
@@ -906,22 +799,18 @@ INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recrui
 (96, 106, '2017-05-01', 'referral'),
 (96, 107, '2017-05-05', 'direct_pitch'),
 (96, 108, '2017-05-10', 'conference_presentation'),
-
--- GOLDEN AGE UNIVERSE Recruitment Events
 (135, 139, '2018-01-15', 'direct_pitch'),
 (135, 140, '2018-02-01', 'referral'),
 (135, 141, '2018-02-15', 'direct_pitch'),
 (135, 142, '2018-03-01', 'conference_presentation'),
-
--- FUTURE TIMELINE 2087 Recruitment Events
 (179, 183, '2020-01-15', 'direct_pitch'),
 (179, 184, '2020-02-01', 'referral'),
 (179, 185, '2020-02-15', 'direct_pitch'),
 (179, 186, '2020-03-01', 'conference_presentation');
 
--- ====================================
+-- ============================================================
 -- 10. POPULATE MARKETING CAMPAIGN TABLE
--- ====================================
+-- ============================================================
 INSERT INTO MarketingCampaign (program_id, program_code) VALUES 
 (1, 'VOUGHT-PRIME-001'),
 (2, 'VOUGHT-ALT616-001'),
@@ -929,9 +818,9 @@ INSERT INTO MarketingCampaign (program_id, program_code) VALUES
 (4, 'VOUGHT-GOLDEN-001'),
 (5, 'VOUGHT-FUTURE-001');
 
--- ====================================
+-- ============================================================
 -- 11. POPULATE MARKETING CAMPAIGN MEMBERS INVOLVED TABLE
--- ====================================
+-- ============================================================
 INSERT INTO MarketingCampaign_MembersInvolved (program_id, members_involved) VALUES 
 (1, 1), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1, 17), (1, 18), (1, 19), (1, 20),
 (2, 45), (2, 49), (2, 50), (2, 51), (2, 52), (2, 53), (2, 54), (2, 55), (2, 56), (2, 57), (2, 58), (2, 59), (2, 60), (2, 61), (2, 62), (2, 63), (2, 64),
@@ -939,9 +828,9 @@ INSERT INTO MarketingCampaign_MembersInvolved (program_id, members_involved) VAL
 (4, 135), (4, 139), (4, 140), (4, 141), (4, 142), (4, 143), (4, 144), (4, 145), (4, 146), (4, 147), (4, 148), (4, 149), (4, 150), (4, 151), (4, 152), (4, 153), (4, 154),
 (5, 179), (5, 183), (5, 184), (5, 185), (5, 186), (5, 187), (5, 188), (5, 189), (5, 190), (5, 191), (5, 192), (5, 193), (5, 194), (5, 195), (5, 196), (5, 197), (5, 198);
 
--- ====================================
+-- ============================================================
 -- 12. POPULATE MARKETING CAMPAIGN ADDITIONAL TABLE
--- ====================================
+-- ============================================================
 INSERT INTO MarketingCampaignAdditional (program_code, universe_id, name, budget, start_date, end_date, status) VALUES 
 ('VOUGHT-PRIME-001', 1, 'Prime Universe Recruitment Initiative', 500000.00, '2015-01-01', '2016-12-31', 'completed'),
 ('VOUGHT-ALT616-001', 2, 'Alternate Earth-616 Expansion', 450000.00, '2016-02-01', '2016-12-31', 'completed'),
@@ -949,14 +838,13 @@ INSERT INTO MarketingCampaignAdditional (program_code, universe_id, name, budget
 ('VOUGHT-GOLDEN-001', 4, 'Golden Age Universe Outreach', 550000.00, '2018-01-01', '2019-12-31', 'active'),
 ('VOUGHT-FUTURE-001', 5, 'Future Timeline Pilot Program', 400000.00, '2020-01-01', '2020-12-31', 'active');
 
--- ====================================
+-- ============================================================
 -- 13. UPDATE UNIVERSE TABLE WITH FIRST_MEMBER_ID
--- ====================================
+-- ============================================================
 UPDATE Universe SET first_member_id = 1 WHERE universe_id = 1;
 UPDATE Universe SET first_member_id = 45 WHERE universe_id = 2;
 UPDATE Universe SET first_member_id = 89 WHERE universe_id = 3;
 UPDATE Universe SET first_member_id = 135 WHERE universe_id = 4;
 UPDATE Universe SET first_member_id = 179 WHERE universe_id = 5;
 
-
-
+SET FOREIGN_KEY_CHECKS = 1;
