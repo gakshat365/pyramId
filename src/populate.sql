@@ -1,850 +1,988 @@
--- ============================================================
--- 0. RESET DATABASE (CLEAN SLATE)
--- ============================================================
-SET NAMES utf8mb4;
+USE VoughDB;
+
+-- Disable foreign key checks temporarily for easier insertion
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE PortalCalibration;
-TRUNCATE TABLE Portals;
+-- Clear existing data (in reverse order of dependencies)
 TRUNCATE TABLE MarketingCampaignAdditional;
 TRUNCATE TABLE MarketingCampaign_MembersInvolved;
 TRUNCATE TABLE MarketingCampaign;
 TRUNCATE TABLE RecruitmentEvent;
 TRUNCATE TABLE Transaction;
+TRUNCATE TABLE PortalCalibration;
+TRUNCATE TABLE Portals;
 TRUNCATE TABLE Member;
 TRUNCATE TABLE Employee;
 TRUNCATE TABLE Participant;
 TRUNCATE TABLE InvestmentTier;
 TRUNCATE TABLE Universe;
 
+-- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================================
--- 1. POPULATE UNIVERSE TABLE
--- ============================================================
-INSERT INTO Universe (universe_id, universe_name, status) VALUES 
-(1, 'Prime Universe', 'active'),
-(2, 'Alternate Earth-616', 'active'),
-(3, 'Dark Dimension', 'active'),
-(4, 'Golden Age Universe', 'active'),
-(5, 'Future Timeline 2087', 'inactive');
+-- =====================================================
+-- STEP 1: Insert Investment Tiers (Highest to Lowest: 1-7)
+-- =====================================================
+INSERT INTO InvestmentTier (tier_id, minimum_investment, commission_rate, max_recruits_allowed, tier_benefits) VALUES
+(1, 100000.00, 25.00, 7, 'Diamond Tier: Exclusive access to multiversal summits, 25% commission on all downline'),
+(2, 50000.00, 20.00, 7, 'Platinum Tier: Priority portal access, 20% commission rate'),
+(3, 25000.00, 15.00, 7, 'Gold Tier: Enhanced recruitment bonuses, 15% commission rate'),
+(4, 10000.00, 12.00, 7, 'Silver Tier: Standard benefits package, 12% commission rate'),
+(5, 5000.00, 10.00, 7, 'Bronze Tier: Basic recruitment tools, 10% commission rate'),
+(6, 2500.00, 8.00, 7, 'Copper Tier: Entry-level benefits, 8% commission rate'),
+(7, 1000.00, 5.00, 7, 'Iron Tier: Starter package, 5% commission rate');
 
--- ============================================================
--- 2. POPULATE INVESTMENT TIER TABLE
--- ============================================================
-INSERT INTO InvestmentTier (tier_id, minimum_investment, commission_rate, max_recruits_allowed, tier_benefits) VALUES 
-(1, 5000000.00, 27.50, 7, 'Founder tier, revenue sharing model'),
-(2, 2500000.00, 25.00, 7, 'Master tier, secondary commission streams'),
-(3, 1000000.00, 22.50, 7, 'Diamond tier, international expansion rights'),
-(4, 500000.00, 20.00, 7, 'Platinum tier, unlimited recruitment bonuses'),
-(5, 250000.00, 18.00, 7, 'Elite tier, franchise opportunities'),
-(6, 100000.00, 15.00, 7, 'Executive status, personal account manager'),
-(7, 50000.00, 12.50, 7, 'VIP status, marketing materials included'),
-(8, 25000.00, 10.00, 7, 'Priority support, bonus commissions'),
-(9, 10000.00, 7.50, 7, 'Enhanced access, weekly payouts'),
-(10, 5000.00, 5.00, 7, 'Basic access, standard commission');
+-- =====================================================
+-- STEP 2: Insert Universes (7 Universes from Phase 1)
+-- =====================================================
+INSERT INTO Universe (universe_id, universe_name, first_member_id, status) VALUES
+(1, 'Friends Universe', NULL, 'active'),
+(2, 'The Big Bang Theory Universe', NULL, 'active'),
+(3, 'Breaking Bad Universe', NULL, 'active'),
+(4, 'Harry Potter Universe', NULL, 'active'),
+(5, 'Family Guy Universe', NULL, 'active'),
+(6, 'Marvel Cinematic Universe', NULL, 'active'),
+(7, 'Invincible Universe', NULL, 'active');
 
--- ============================================================
--- 3. POPULATE PARTICIPANT TABLE
--- ============================================================
-INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES 
-(1, 'Anthony', 'Stark', '1970-05-29', 1, 'Earth', 'USA', 1),
-(2, 'Natasha', 'Romanoff', '1984-11-22', 1, 'Earth', 'Russia', 2),
-(3, 'Bruce', 'Banner', '1969-12-18', 1, 'Earth', 'USA', 3),
-(4, 'Steve', 'Rogers', '1918-07-04', 1, 'Earth', 'USA', 1),
-(5, 'Clint', 'Barton', '1975-01-15', 1, 'Earth', 'USA', 4),
-(6, 'Thor', 'Odinson', '1965-03-01', 1, 'Asgard', 'Norway', 5),
-(7, 'Peter', 'Parker', '2001-08-10', 1, 'Earth', 'USA', 6),
-(8, 'Carol', 'Danvers', '1980-06-17', 1, 'Earth', 'USA', 7),
-(9, 'Scott', 'Lang', '1989-11-04', 1, 'Earth', 'USA', 8),
-(10, 'Wanda', 'Maximoff', '1989-04-17', 1, 'Earth', 'Slovenia', 9),
-(11, 'Vision', 'Synthezoid', '2015-05-01', 1, 'Earth', 'USA', 10),
-(12, 'Sam', 'Wilson', '1978-09-14', 1, 'Earth', 'USA', 11),
-(13, 'Bucky', 'Barnes', '1917-03-10', 1, 'Earth', 'USA', 1),
-(14, 'Pepper', 'Potts', '1982-01-02', 1, 'Earth', 'USA', 1),
-(15, 'Happy', 'Hogan', '1971-08-07', 1, 'Earth', 'USA', 1),
-(16, 'Nick', 'Fury', '1970-05-20', 1, 'Earth', 'USA', 3),
-(17, 'Laura', 'Kinney', '2000-02-28', 1, 'Earth', 'Canada', 12),
-(18, 'Harley', 'Keener', '2012-06-15', 1, 'Earth', 'USA', 13),
-(19, 'Morgan', 'Stark', '2019-04-08', 1, 'Earth', 'USA', 1),
-(20, 'Kate', 'Bishop', '2001-01-22', 1, 'Earth', 'USA', 14),
-(21, 'America', 'Chavez', '2003-11-11', 1, 'Earth', 'USA', 15),
-(22, 'Suri', 'Patel', '1988-07-19', 1, 'Earth', 'India', 16),
-(23, 'Aditya', 'Kumar', '1992-03-05', 1, 'Earth', 'India', 17),
-(24, 'Ravi', 'Sharma', '1985-09-12', 1, 'Earth', 'India', 18),
-(25, 'Arjun', 'Singh', '1990-01-08', 1, 'Earth', 'India', 19),
-(26, 'Priya', 'Desai', '1987-05-14', 1, 'Earth', 'India', 20),
-(27, 'Vikram', 'Reddy', '1993-07-22', 1, 'Earth', 'India', 21),
-(28, 'Ananya', 'Gupta', '1991-09-10', 1, 'Earth', 'India', 22),
-(29, 'Rohit', 'Verma', '1989-11-03', 1, 'Earth', 'India', 23),
-(30, 'Divya', 'Nair', '1994-02-17', 1, 'Earth', 'India', 24),
-(31, 'Karan', 'Rao', '1986-04-25', 1, 'Earth', 'India', 25),
-(32, 'Neha', 'Menon', '1992-08-11', 1, 'Earth', 'India', 26),
-(33, 'Ashok', 'Joshi', '1988-06-19', 1, 'Earth', 'India', 27),
-(34, 'Kavya', 'Iyer', '1995-10-02', 1, 'Earth', 'India', 28),
-(35, 'Manish', 'Bhat', '1990-12-14', 1, 'Earth', 'India', 29),
-(36, 'Sneha', 'Pillai', '1993-03-30', 1, 'Earth', 'India', 30),
-(37, 'Rajesh', 'Chopra', '1987-01-22', 1, 'Earth', 'India', 31),
-(38, 'Anjali', 'Saxena', '1991-05-08', 1, 'Earth', 'India', 32),
-(39, 'Nikhil', 'Mishra', '1989-07-16', 1, 'Earth', 'India', 33),
-(40, 'Pooja', 'Bhatt', '1994-09-23', 1, 'Earth', 'India', 34),
-(41, 'Sanjay', 'Tiwari', '1986-11-05', 1, 'Earth', 'India', 35),
-(42, 'Isha', 'Kapoor', '1992-04-12', 1, 'Earth', 'India', 36),
-(43, 'Vishal', 'Yadav', '1988-08-28', 1, 'Earth', 'India', 37),
-(44, 'Ritika', 'Agarwal', '1995-06-01', 1, 'Earth', 'India', 38),
-(45, 'Miles', 'Morales', '2000-03-20', 2, 'Earth', 'USA', 39),
-(46, 'Gwen', 'Stacy', '2001-11-04', 2, 'Earth', 'USA', 40),
-(47, 'Miguel', 'O''Hara', '1992-07-15', 2, 'Earth', 'Spain', 41),
-(48, 'Jessica', 'Jones', '1989-12-10', 2, 'Earth', 'USA', 42),
-(49, 'Luke', 'Cage', '1986-09-01', 2, 'Earth', 'USA', 43),
-(50, 'Danny', 'Rand', '1988-02-27', 2, 'Earth', 'USA', 44),
-(51, 'Colleen', 'Wing', '1990-06-14', 2, 'Earth', 'China', 45),
-(52, 'Shang-Chi', 'Zhang', '1991-09-03', 2, 'Earth', 'China', 46),
-(53, 'Ayo', 'Adeyemi', '1987-04-22', 2, 'Earth', 'Nigeria', 47),
-(54, 'T''Challa', 'Udaku', '1977-11-16', 2, 'Wakanda', 'Fictional Nation', 48),
-(55, 'Nakia', 'Bahadir', '1989-05-08', 2, 'Wakanda', 'Fictional Nation', 48),
-(56, 'Okoye', 'Adeyemi', '1984-12-02', 2, 'Wakanda', 'Fictional Nation', 48),
-(57, 'Erik', 'Killmonger', '1986-01-15', 2, 'Wakanda', 'Fictional Nation', 48),
-(58, 'W''Kabi', 'Rebel', '1985-03-20', 2, 'Wakanda', 'Fictional Nation', 48),
-(59, 'Zuri', 'Warrior', '1975-07-10', 2, 'Wakanda', 'Fictional Nation', 48),
-(60, 'Shuri', 'Udaku', '2003-11-30', 2, 'Wakanda', 'Fictional Nation', 48),
-(61, 'M''Baku', 'Chief', '1982-05-25', 2, 'Wakanda', 'Fictional Nation', 48),
-(62, 'Ramonda', 'Queen', '1960-09-14', 2, 'Wakanda', 'Fictional Nation', 48),
-(63, 'James', 'Rupert', '1980-04-03', 2, 'Earth', 'UK', 49),
-(64, 'Sarah', 'Wilson', '1992-08-19', 2, 'Earth', 'USA', 50),
-(65, 'Ava', 'Starr', '1995-02-11', 2, 'Earth', 'USA', 51),
-(66, 'Casper', 'Hayes', '1994-06-17', 2, 'Earth', 'USA', 52),
-(67, 'Jordan', 'Price', '1996-09-08', 2, 'Earth', 'USA', 53),
-(68, 'Khalid', 'Kareem', '1993-01-14', 2, 'Earth', 'Egypt', 54),
-(69, 'Farah', 'Ahmed', '1997-04-22', 2, 'Earth', 'Egypt', 55),
-(70, 'Hassan', 'Mohamed', '1994-07-30', 2, 'Earth', 'Egypt', 56),
-(71, 'Leila', 'Hassan', '1998-10-05', 2, 'Earth', 'Egypt', 57),
-(72, 'Omar', 'Ibrahim', '1995-12-18', 2, 'Earth', 'Egypt', 58),
-(73, 'Zainab', 'Rahman', '1999-02-09', 2, 'Earth', 'Egypt', 59),
-(74, 'Marcus', 'Stone', '1992-05-21', 2, 'Earth', 'USA', 60),
-(75, 'Diana', 'Cross', '1996-08-14', 2, 'Earth', 'USA', 61),
-(76, 'Tyler', 'Green', '1993-11-27', 2, 'Earth', 'USA', 62),
-(77, 'Emily', 'White', '1997-03-19', 2, 'Earth', 'USA', 63),
-(78, 'James', 'Black', '1994-06-22', 2, 'Earth', 'USA', 64),
-(79, 'Sophie', 'Brown', '1998-09-11', 2, 'Earth', 'USA', 65),
-(80, 'Michael', 'Gray', '1995-01-16', 2, 'Earth', 'USA', 66),
-(81, 'Hannah', 'Clark', '1999-04-08', 2, 'Earth', 'USA', 67),
-(82, 'Daniel', 'Lewis', '1993-07-25', 2, 'Earth', 'USA', 68),
-(83, 'Olivia', 'Walker', '1996-10-30', 2, 'Earth', 'USA', 69),
-(84, 'Andrew', 'Hall', '1994-12-09', 2, 'Earth', 'USA', 70),
-(85, 'Charlotte', 'Allen', '1998-02-13', 2, 'Earth', 'USA', 71),
-(86, 'Christopher', 'Young', '1995-05-17', 2, 'Earth', 'USA', 72),
-(87, 'Amelia', 'King', '1999-08-02', 2, 'Earth', 'USA', 73),
-(88, 'David', 'Wright', '1993-11-23', 2, 'Earth', 'USA', 74),
-(89, 'Strange', 'Doctor', '1963-11-18', 3, 'Earth', 'USA', 75),
-(90, 'Mordo', 'Baron', '1960-07-22', 3, 'Earth', 'Transylvania', 76),
-(91, 'Wong', 'Master', '1965-01-10', 3, 'Earth', 'China', 77),
-(92, 'Clea', 'Strange', '1985-03-15', 3, 'Dark Dimension', 'Mystical Realm', 78),
-(93, 'Kaecilius', 'Master', '1975-09-05', 3, 'Dark Dimension', 'Mystical Realm', 79),
-(94, 'Zealot', 'Follower', '1988-02-14', 3, 'Dark Dimension', 'Mystical Realm', 80),
-(95, 'Dormammu', 'Entity', '1970-06-01', 3, 'Dark Dimension', 'Mystical Realm', 81),
-(96, 'Astrid', 'Mystical', '1992-04-22', 3, 'Dark Dimension', 'Mystical Realm', 82),
-(97, 'Agamotto', 'Eye', '1980-08-10', 3, 'Dark Dimension', 'Mystical Realm', 83),
-(98, 'Kamar-Taj', 'Sorcerer', '1975-12-19', 3, 'Earth', 'Nepal', 84),
-(99, 'Nictea', 'Mystic', '1987-01-27', 3, 'Dark Dimension', 'Mystical Realm', 85),
-(100, 'Valtorr', 'Force', '1982-09-03', 3, 'Dark Dimension', 'Mystical Realm', 86),
-(101, 'Hoggoth', 'Ancient', '1978-04-14', 3, 'Dark Dimension', 'Mystical Realm', 87),
-(102, 'Oshtur', 'Goddess', '1989-07-21', 3, 'Dark Dimension', 'Mystical Realm', 88),
-(103, 'Rigelian', 'Scholar', '1984-10-30', 3, 'Dark Dimension', 'Mystical Realm', 89),
-(104, 'Yggdrasil', 'Tree', '1976-03-08', 3, 'Dark Dimension', 'Mystical Realm', 90),
-(105, 'Zom', 'Demon', '1983-06-15', 3, 'Dark Dimension', 'Mystical Realm', 91),
-(106, 'Chthon', 'Elder', '1979-11-22', 3, 'Dark Dimension', 'Mystical Realm', 92),
-(107, 'Sheol', 'Realm', '1986-02-05', 3, 'Dark Dimension', 'Mystical Realm', 93),
-(108, 'Satannish', 'Devil', '1981-08-17', 3, 'Dark Dimension', 'Mystical Realm', 94),
-(109, 'Rintrah', 'Beast', '1994-05-19', 3, 'Dark Dimension', 'Mystical Realm', 95),
-(110, 'Topaz', 'Creature', '1997-09-12', 3, 'Dark Dimension', 'Mystical Realm', 96),
-(111, 'Ebony', 'Maw', '1995-01-28', 3, 'Dark Dimension', 'Mystical Realm', 97),
-(112, 'Shadow', 'Shade', '1998-04-06', 3, 'Dark Dimension', 'Mystical Realm', 98),
-(113, 'Whisper', 'Echo', '1996-07-14', 3, 'Dark Dimension', 'Mystical Realm', 99),
-(114, 'Phantom', 'Ghost', '1999-10-23', 3, 'Dark Dimension', 'Mystical Realm', 100),
-(115, 'Specter', 'Spirit', '1993-12-09', 3, 'Dark Dimension', 'Mystical Realm', 101),
-(116, 'Wraith', 'Apparition', '1997-03-17', 3, 'Dark Dimension', 'Mystical Realm', 102),
-(117, 'Banshee', 'Cry', '1994-06-25', 3, 'Dark Dimension', 'Mystical Realm', 103),
-(118, 'Siren', 'Song', '1998-08-31', 3, 'Dark Dimension', 'Mystical Realm', 104),
-(119, 'Harpy', 'Wing', '1995-02-11', 3, 'Dark Dimension', 'Mystical Realm', 105),
-(120, 'Gorgon', 'Gaze', '1999-05-19', 3, 'Dark Dimension', 'Mystical Realm', 106),
-(121, 'Basilisk', 'King', '1992-09-26', 3, 'Dark Dimension', 'Mystical Realm', 107),
-(122, 'Hydra', 'Head', '1996-11-03', 3, 'Dark Dimension', 'Mystical Realm', 108),
-(123, 'Drake', 'Serpent', '1994-04-10', 3, 'Dark Dimension', 'Mystical Realm', 109),
-(124, 'Phoenix', 'Fire', '1998-01-22', 3, 'Dark Dimension', 'Mystical Realm', 110),
-(125, 'Gryphon', 'Beast', '1995-07-08', 3, 'Dark Dimension', 'Mystical Realm', 111),
-(126, 'Chimera', 'Hybrid', '1999-09-14', 3, 'Dark Dimension', 'Mystical Realm', 112),
-(127, 'Cyclops', 'Eye', '1993-03-20', 3, 'Dark Dimension', 'Mystical Realm', 113),
-(128, 'Minotaur', 'Labyrinth', '1997-06-27', 3, 'Dark Dimension', 'Mystical Realm', 114),
-(129, 'Centaur', 'Half', '1994-10-04', 3, 'Dark Dimension', 'Mystical Realm', 115),
-(130, 'Satyr', 'Pan', '1998-12-11', 3, 'Dark Dimension', 'Mystical Realm', 116),
--- ID 131 and 132 Added here to satisfy Member table Foreign Keys for Dark Dimension recruits
-(131, 'Shadow', 'Creature', '1999-01-01', 3, 'Dark Dimension', 'Mystical Realm', 117),
-(132, 'Dark', 'Minion', '1999-01-01', 3, 'Dark Dimension', 'Mystical Realm', 118),
-(135, 'Dinah', 'Lance', '1989-03-11', 4, 'Earth', 'USA', 121),
-(136, 'Oliver', 'Queen', '1986-05-16', 4, 'Earth', 'USA', 122),
-(137, 'Aquaman', 'Sea', '1984-11-01', 4, 'Atlantis', 'Oceanic Kingdom', 123),
-(138, 'Wonder', 'Woman', '1990-08-22', 4, 'Themyscira', 'Greece', 124),
-(139, 'Flash', 'Speed', '1991-01-14', 4, 'Earth', 'USA', 125),
-(140, 'Green', 'Lantern', '1988-09-27', 4, 'Earth', 'USA', 126),
-(141, 'Hawkgirl', 'Sky', '1993-04-03', 4, 'Earth', 'USA', 127),
-(142, 'Martian', 'Manhunter', '1987-06-19', 4, 'Mars', 'Red Planet', 128),
-(143, 'Black', 'Canary', '1992-12-08', 4, 'Earth', 'USA', 129),
-(144, 'Green', 'Arrow', '1989-08-25', 4, 'Earth', 'USA', 130),
-(145, 'Zatanna', 'Zatara', '1985-11-04', 4, 'Earth', 'USA', 131),
-(146, 'Shadow', 'Thief', '1994-02-12', 4, 'Earth', 'USA', 132),
-(147, 'Vixen', 'Emblem', '1991-07-21', 4, 'Africa', 'Fictional Nation', 133),
-(148, 'Static', 'Shock', '1996-03-06', 4, 'Earth', 'USA', 134),
-(149, 'Cyborg', 'Tech', '1993-09-15', 4, 'Earth', 'USA', 135),
-(150, 'Beast', 'Boy', '1997-06-29', 4, 'Earth', 'USA', 136),
-(151, 'Raven', 'Shadow', '1995-01-08', 4, 'Earth', 'USA', 137),
-(152, 'Starfire', 'Alien', '1998-05-19', 4, 'Tamaran', 'Alien Planet', 138),
-(153, 'Robin', 'Sidekick', '1992-09-26', 4, 'Earth', 'USA', 139),
-(154, 'Batgirl', 'Oracle', '1996-04-11', 4, 'Earth', 'USA', 140),
-(155, 'Nightwing', 'Acrobat', '1994-11-18', 4, 'Earth', 'USA', 141),
-(156, 'Red', 'Hood', '1997-03-25', 4, 'Earth', 'USA', 142),
-(157, 'Catwoman', 'Feline', '1999-08-01', 4, 'Earth', 'USA', 143),
-(158, 'Poison', 'Ivy', '1993-06-09', 4, 'Earth', 'USA', 144),
-(159, 'Harley', 'Quinn', '1998-02-14', 4, 'Earth', 'USA', 145),
-(160, 'Two', 'Face', '1995-10-22', 4, 'Earth', 'USA', 146),
-(161, 'Riddler', 'Enigma', '1994-12-30', 4, 'Earth', 'USA', 147),
-(162, 'Scarecrow', 'Fear', '1999-07-17', 4, 'Earth', 'USA', 148),
-(163, 'Penguin', 'Bird', '1992-04-05', 4, 'Earth', 'USA', 149),
-(164, 'Joker', 'Laugh', '1996-09-12', 4, 'Earth', 'USA', 150),
-(165, 'Killer', 'Croc', '1994-01-28', 4, 'Earth', 'USA', 151),
-(166, 'Man', 'Bat', '1998-06-03', 4, 'Earth', 'USA', 152),
-(167, 'Solomon', 'Grundy', '1995-11-14', 4, 'Earth', 'USA', 153),
-(168, 'Victor', 'Zsasz', '1999-03-21', 4, 'Earth', 'USA', 154),
-(169, 'Professor', 'Pyg', '1992-08-09', 4, 'Earth', 'USA', 155),
-(170, 'Calendar', 'Man', '1996-05-16', 4, 'Earth', 'USA', 156),
-(171, 'Hush', 'Silent', '1994-07-24', 4, 'Earth', 'USA', 157),
-(172, 'Clayface', 'Mud', '1998-10-02', 4, 'Earth', 'USA', 158),
-(173, 'Bane', 'Venom', '1995-02-13', 4, 'Earth', 'USA', 159),
-(174, 'Ra', 'Guardian', '1999-04-20', 4, 'Earth', 'USA', 160),
-(175, 'Kamala', 'Khan', '2006-03-03', 5, 'Earth', 'USA', 161),
-(176, 'Sam', 'Alexander', '2004-07-14', 5, 'Earth', 'USA', 162),
-(177, 'Nova', 'Rider', '2005-11-08', 5, 'Earth', 'USA', 163),
-(178, 'Miles', 'Venom', '2007-02-20', 5, 'Earth', 'USA', 164),
-(179, 'Peter', 'Age', '2003-01-25', 5, 'Earth', 'USA', 165),
-(180, 'Gwen', 'Ghost', '2008-09-10', 5, 'Earth', 'USA', 166),
-(181, 'Hobie', 'Punk', '2004-05-30', 5, 'Earth', 'USA', 167),
-(182, 'Jessica', 'Drew', '2006-12-15', 5, 'Earth', 'USA', 168),
-(183, 'Ben', 'Reilly', '2005-04-08', 5, 'Earth', 'USA', 169),
-(184, 'Felicia', 'Hardy', '2007-08-22', 5, 'Earth', 'USA', 170),
-(185, 'Anya', 'Corazon', '2008-11-16', 5, 'Earth', 'USA', 171),
-(186, 'Miguel', 'Karn', '2006-06-02', 5, 'Earth', 'USA', 172),
-(187, 'Jessica', 'Jones2', '2009-02-19', 5, 'Earth', 'USA', 173),
-(188, 'Danny', 'Rand2', '2005-10-11', 5, 'Earth', 'USA', 174),
-(189, 'Luke', 'Cage2', '2007-03-28', 5, 'Earth', 'USA', 175),
-(190, 'Matt', 'Murdock', '2006-09-14', 5, 'Earth', 'USA', 176),
-(191, 'Frank', 'Castle', '2008-12-07', 5, 'Earth', 'USA', 177),
-(192, 'Elektra', 'Natchios', '2005-01-23', 5, 'Earth', 'USA', 178),
-(193, 'Stick', 'Sword', '2007-07-05', 5, 'Earth', 'USA', 179),
-(194, 'Typhoid', 'Mary', '2006-04-30', 5, 'Earth', 'USA', 180),
-(195, 'Bullseye', 'Target', '2008-08-17', 5, 'Earth', 'USA', 181),
-(196, 'Kingpin', 'Crime', '2009-11-25', 5, 'Earth', 'USA', 182),
-(197, 'Hand', 'Shadow', '2007-02-09', 5, 'Earth', 'USA', 183),
-(198, 'Ninja', 'Assassin', '2008-05-18', 5, 'Earth', 'USA', 184),
-(199, 'Samurai', 'Sword', '2006-10-04', 5, 'Earth', 'USA', 185),
-(200, 'Dragon', 'Fire', '2009-01-12', 5, 'Earth', 'USA', 186),
-(201, 'Crane', 'Wing', '2007-06-27', 5, 'Earth', 'USA', 187),
-(202, 'Tiger', 'Fang', '2008-09-15', 5, 'Earth', 'USA', 188),
-(203, 'Phoenix', 'Rise', '2005-12-03', 5, 'Earth', 'USA', 189),
-(204, 'Serpent', 'Venom', '2009-04-11', 5, 'Earth', 'USA', 190),
-(205, 'Eagle', 'Flight', '2006-08-22', 5, 'Earth', 'USA', 191),
-(206, 'Wolf', 'Pack', '2008-03-30', 5, 'Earth', 'USA', 192),
-(207, 'Bear', 'Strength', '2007-11-18', 5, 'Earth', 'USA', 193),
-(208, 'Fox', 'Cunning', '2009-07-06', 5, 'Earth', 'USA', 194),
-(209, 'Owl', 'Night', '2005-09-14', 5, 'Earth', 'USA', 195),
-(210, 'Raven', 'Dark', '2008-12-28', 5, 'Earth', 'USA', 196),
-(211, 'Hawk', 'Vision', '2006-02-05', 5, 'Earth', 'USA', 197),
-(212, 'Dove', 'Peace', '2009-06-13', 5, 'Earth', 'USA', 198),
-(213, 'Snake', 'Coil', '2007-04-21', 5, 'Earth', 'USA', 199),
-(214, 'Lizard', 'Reptile', '2008-10-09', 5, 'Earth', 'USA', 200),
-(215, 'Turtle', 'Shell', '2005-11-27', 5, 'Earth', 'USA', 201),
-(216, 'Fish', 'Scale', '2009-05-15', 5, 'Earth', 'USA', 202),
-(217, 'Bird', 'Feather', '2006-07-23', 5, 'Earth', 'USA', 203),
-(218, 'Beast', 'Claw', '2008-01-31', 5, 'Earth', 'USA', 204),
-(219, 'Strange', 'Doctor', '1963-11-18', 3, 'Earth', 'USA', 205),
-(220, 'Wong', 'Master', '1965-01-10', 3, 'Earth', 'China', 206);
+-- =====================================================
+-- STEP 3: Insert Tier 1 Members (7 Founding Members - 1 per Universe)
+-- =====================================================
 
--- ============================================================
--- 4. POPULATE EMPLOYEE TABLE
--- ============================================================
-INSERT INTO Employee (participant_id, role, access_level, hire_date, salary, status) VALUES 
-(1, 'CEO', 10, '2015-01-01', 500000.00, 'active'),
-(2, 'Data Architect', 9, '2015-03-15', 350000.00, 'active'),
-(3, 'Finance Manager', 8, '2015-02-20', 250000.00, 'active'),
-(4, 'Recruitment Manager', 7, '2015-04-10', 200000.00, 'active'),
-(219, 'Multiversal Systems Engineer', 8, '2018-01-01', 300000.00, 'active'),
-(220, 'Systems Engineer', 6, '2018-06-15', 180000.00, 'active');
+-- Universe 1: Friends - Joey Tribbiani
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(1, 'Joey', 'Tribbiani', '1968-01-09', 1, 'Earth', 'USA', 1);
 
--- ============================================================
--- 5. POPULATE MEMBER TABLE
--- ============================================================
--- Tier IDs are now 1-10. Tier Level in Member table updated to match.
-INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES 
-(1, 1, '2015-01-01', 'active', NULL, 4),
-(5, 2, '2015-05-01', 'active', 1, 3),
-(6, 2, '2015-06-15', 'active', 1, 3),
-(7, 2, '2015-07-20', 'active', 1, 3),
-(8, 2, '2015-08-01', 'active', 1, 3),
-(9, 3, '2015-09-10', 'active', 5, 2),
-(10, 3, '2015-09-15', 'active', 5, 2),
-(11, 3, '2015-10-01', 'active', 5, 2),
-(12, 3, '2015-10-05', 'active', 6, 2),
-(13, 3, '2015-10-10', 'active', 6, 2),
-(14, 3, '2015-10-20', 'active', 7, 2),
-(15, 3, '2015-10-25', 'active', 7, 2),
-(16, 3, '2015-11-01', 'active', 7, 2),
-(17, 3, '2015-11-05', 'active', 8, 2),
-(18, 3, '2015-11-10', 'active', 8, 2),
-(19, 3, '2015-11-15', 'active', 8, 2),
-(20, 3, '2015-11-20', 'active', 8, 2),
-(21, 4, '2015-12-01', 'active', 9, 0),
-(22, 4, '2015-12-05', 'active', 9, 0),
-(23, 4, '2015-12-10', 'active', 10, 0),
-(24, 4, '2015-12-15', 'active', 10, 0),
-(25, 4, '2015-12-20', 'active', 11, 0),
-(26, 4, '2016-01-05', 'active', 11, 0),
-(27, 4, '2016-01-10', 'active', 12, 0),
-(28, 4, '2016-01-15', 'active', 12, 0),
-(29, 4, '2016-01-20', 'active', 13, 0),
-(30, 4, '2016-01-25', 'active', 13, 0),
-(31, 4, '2016-02-01', 'active', 14, 0),
-(32, 4, '2016-02-05', 'active', 14, 0),
-(33, 4, '2016-02-10', 'active', 15, 0),
-(34, 4, '2016-02-15', 'active', 15, 0),
-(35, 4, '2016-02-20', 'active', 16, 0),
-(36, 4, '2016-02-25', 'active', 16, 0),
-(37, 4, '2016-03-01', 'active', 17, 0),
-(38, 4, '2016-03-05', 'active', 17, 0),
-(39, 4, '2016-03-10', 'active', 18, 0),
-(40, 4, '2016-03-15', 'active', 18, 0),
-(41, 4, '2016-03-20', 'active', 19, 0),
-(42, 4, '2016-03-25', 'active', 19, 0),
-(43, 4, '2016-04-01', 'active', 20, 0),
-(44, 4, '2016-04-05', 'active', 20, 0),
-(45, 1, '2016-02-01', 'active', NULL, 4),
-(49, 2, '2016-02-15', 'active', 45, 3),
-(50, 2, '2016-02-20', 'active', 45, 3),
-(51, 2, '2016-03-01', 'active', 45, 3),
-(52, 2, '2016-03-05', 'active', 45, 3),
-(53, 3, '2016-03-15', 'active', 49, 2),
-(54, 3, '2016-03-20', 'active', 49, 2),
-(55, 3, '2016-03-25', 'active', 49, 2),
-(56, 3, '2016-04-01', 'active', 50, 2),
-(57, 3, '2016-04-05', 'active', 50, 2),
-(58, 3, '2016-04-10', 'active', 51, 2),
-(59, 3, '2016-04-15', 'active', 51, 2),
-(60, 3, '2016-04-20', 'active', 51, 2),
-(61, 3, '2016-04-25', 'active', 52, 2),
-(62, 3, '2016-05-01', 'active', 52, 2),
-(63, 3, '2016-05-05', 'active', 52, 2),
-(64, 3, '2016-05-10', 'active', 52, 2),
-(65, 4, '2016-05-15', 'active', 53, 0),
-(66, 4, '2016-05-20', 'active', 53, 0),
-(67, 4, '2016-05-25', 'active', 54, 0),
-(68, 4, '2016-06-01', 'active', 54, 0),
-(69, 4, '2016-06-05', 'active', 55, 0),
-(70, 4, '2016-06-10', 'active', 55, 0),
-(71, 4, '2016-06-15', 'active', 56, 0),
-(72, 4, '2016-06-20', 'active', 56, 0),
-(73, 4, '2016-06-25', 'active', 57, 0),
-(74, 4, '2016-07-01', 'active', 57, 0),
-(75, 4, '2016-07-05', 'active', 58, 0),
-(76, 4, '2016-07-10', 'active', 58, 0),
-(77, 4, '2016-07-15', 'active', 59, 0),
-(78, 4, '2016-07-20', 'active', 59, 0),
-(79, 4, '2016-07-25', 'active', 60, 0),
-(80, 4, '2016-08-01', 'active', 60, 0),
-(81, 4, '2016-08-05', 'active', 61, 0),
-(82, 4, '2016-08-10', 'active', 61, 0),
-(83, 4, '2016-08-15', 'active', 62, 0),
-(84, 4, '2016-08-20', 'active', 62, 0),
-(85, 4, '2016-08-25', 'active', 63, 0),
-(86, 4, '2016-09-01', 'active', 63, 0),
-(87, 4, '2016-09-05', 'active', 64, 0),
-(88, 4, '2016-09-10', 'active', 64, 0),
-(89, 1, '2017-01-01', 'active', NULL, 4),
-(93, 2, '2017-01-15', 'active', 89, 3),
-(94, 2, '2017-02-01', 'active', 89, 3),
-(95, 2, '2017-02-15', 'active', 89, 3),
-(96, 2, '2017-03-01', 'active', 89, 3),
-(97, 3, '2017-03-15', 'active', 93, 2),
-(98, 3, '2017-03-20', 'active', 93, 2),
-(99, 3, '2017-03-25', 'active', 93, 2),
-(100, 3, '2017-04-01', 'active', 94, 2),
-(101, 3, '2017-04-05', 'active', 94, 2),
-(102, 3, '2017-04-10', 'active', 95, 2),
-(103, 3, '2017-04-15', 'active', 95, 2),
-(104, 3, '2017-04-20', 'active', 95, 2),
-(105, 3, '2017-04-25', 'active', 96, 2),
-(106, 3, '2017-05-01', 'active', 96, 2),
-(107, 3, '2017-05-05', 'active', 96, 2),
-(108, 3, '2017-05-10', 'active', 96, 2),
-(109, 4, '2017-05-15', 'active', 97, 0),
-(110, 4, '2017-05-20', 'active', 97, 0),
-(111, 4, '2017-05-25', 'active', 98, 0),
-(112, 4, '2017-06-01', 'active', 98, 0),
-(113, 4, '2017-06-05', 'active', 99, 0),
-(114, 4, '2017-06-10', 'active', 99, 0),
-(115, 4, '2017-06-15', 'active', 100, 0),
-(116, 4, '2017-06-20', 'active', 100, 0),
-(117, 4, '2017-06-25', 'active', 101, 0),
-(118, 4, '2017-07-01', 'active', 101, 0),
-(119, 4, '2017-07-05', 'active', 102, 0),
-(120, 4, '2017-07-10', 'active', 102, 0),
-(121, 4, '2017-07-15', 'active', 103, 0),
-(122, 4, '2017-07-20', 'active', 103, 0),
-(123, 4, '2017-07-25', 'active', 104, 0),
-(124, 4, '2017-08-01', 'active', 104, 0),
-(125, 4, '2017-08-05', 'active', 105, 0),
-(126, 4, '2017-08-10', 'active', 105, 0),
-(127, 4, '2017-08-15', 'active', 106, 0),
-(128, 4, '2017-08-20', 'active', 106, 0),
-(129, 4, '2017-08-25', 'active', 107, 0),
-(130, 4, '2017-09-01', 'active', 107, 0),
-(131, 4, '2017-09-05', 'active', 108, 0),
-(132, 4, '2017-09-10', 'active', 108, 0),
-(135, 1, '2018-01-01', 'active', NULL, 4),
-(139, 2, '2018-01-15', 'active', 135, 3),
-(140, 2, '2018-02-01', 'active', 135, 3),
-(141, 2, '2018-02-15', 'active', 135, 3),
-(142, 2, '2018-03-01', 'active', 135, 3),
-(143, 3, '2018-03-15', 'active', 139, 2),
-(144, 3, '2018-03-20', 'active', 139, 2),
-(145, 3, '2018-03-25', 'active', 139, 2),
-(146, 3, '2018-04-01', 'active', 140, 2),
-(147, 3, '2018-04-05', 'active', 140, 2),
-(148, 3, '2018-04-10', 'active', 141, 2),
-(149, 3, '2018-04-15', 'active', 141, 2),
-(150, 3, '2018-04-20', 'active', 141, 2),
-(151, 3, '2018-04-25', 'active', 142, 2),
-(152, 3, '2018-05-01', 'active', 142, 2),
-(153, 3, '2018-05-05', 'active', 142, 2),
-(154, 3, '2018-05-10', 'active', 142, 2),
-(155, 4, '2018-05-15', 'active', 143, 0),
-(156, 4, '2018-05-20', 'active', 143, 0),
-(157, 4, '2018-05-25', 'active', 144, 0),
-(158, 4, '2018-06-01', 'active', 144, 0),
-(159, 4, '2018-06-05', 'active', 145, 0),
-(160, 4, '2018-06-10', 'active', 145, 0),
-(161, 4, '2018-06-15', 'active', 146, 0),
-(162, 4, '2018-06-20', 'active', 146, 0),
-(163, 4, '2018-06-25', 'active', 147, 0),
-(164, 4, '2018-07-01', 'active', 147, 0),
-(165, 4, '2018-07-05', 'active', 148, 0),
-(166, 4, '2018-07-10', 'active', 148, 0),
-(167, 4, '2018-07-15', 'active', 149, 0),
-(168, 4, '2018-07-20', 'active', 149, 0),
-(169, 4, '2018-07-25', 'active', 150, 0),
-(170, 4, '2018-08-01', 'active', 150, 0),
-(171, 4, '2018-08-05', 'active', 151, 0),
-(172, 4, '2018-08-10', 'active', 151, 0),
-(173, 4, '2018-08-15', 'active', 152, 0),
-(174, 4, '2018-08-20', 'active', 152, 0),
-(175, 4, '2018-08-25', 'active', 153, 0),
-(176, 4, '2018-09-01', 'active', 153, 0),
-(177, 4, '2018-09-05', 'active', 154, 0),
-(178, 4, '2018-09-10', 'active', 154, 0),
-(179, 1, '2020-01-01', 'active', NULL, 4),
-(183, 2, '2020-01-15', 'active', 179, 3),
-(184, 2, '2020-02-01', 'active', 179, 3),
-(185, 2, '2020-02-15', 'active', 179, 3),
-(186, 2, '2020-03-01', 'active', 179, 3),
-(187, 3, '2020-03-15', 'active', 183, 2),
-(188, 3, '2020-03-20', 'active', 183, 2),
-(189, 3, '2020-03-25', 'active', 183, 2),
-(190, 3, '2020-04-01', 'active', 184, 2),
-(191, 3, '2020-04-05', 'active', 184, 2),
-(192, 3, '2020-04-10', 'active', 185, 2),
-(193, 3, '2020-04-15', 'active', 185, 2),
-(194, 3, '2020-04-20', 'active', 185, 2),
-(195, 3, '2020-04-25', 'active', 186, 2),
-(196, 3, '2020-05-01', 'active', 186, 2),
-(197, 3, '2020-05-05', 'active', 186, 2),
-(198, 3, '2020-05-10', 'active', 186, 2),
-(199, 4, '2020-05-15', 'active', 187, 0),
-(200, 4, '2020-05-20', 'active', 187, 0),
-(201, 4, '2020-05-25', 'active', 188, 0),
-(202, 4, '2020-06-01', 'active', 188, 0),
-(203, 4, '2020-06-05', 'active', 189, 0),
-(204, 4, '2020-06-10', 'active', 189, 0),
-(205, 4, '2020-06-15', 'active', 190, 0),
-(206, 4, '2020-06-20', 'active', 190, 0),
-(207, 4, '2020-06-25', 'active', 191, 0),
-(208, 4, '2020-07-01', 'active', 191, 0),
-(209, 4, '2020-07-05', 'active', 192, 0),
-(210, 4, '2020-07-10', 'active', 192, 0),
-(211, 4, '2020-07-15', 'active', 193, 0),
-(212, 4, '2020-07-20', 'active', 193, 0),
-(213, 4, '2020-07-25', 'active', 194, 0),
-(214, 4, '2020-08-01', 'active', 194, 0),
-(215, 4, '2020-08-05', 'active', 195, 0),
-(216, 4, '2020-08-10', 'active', 195, 0),
-(217, 4, '2020-08-15', 'active', 196, 0),
-(218, 4, '2020-08-20', 'active', 196, 0);
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(1, 1, '2023-01-15', 'active', NULL, 4);
 
--- ============================================================
--- 6. POPULATE PORTALS TABLE
--- ============================================================
-INSERT INTO Portals (portal_id, source_universe_id, target_universe_id, engineer_id, status, cost) VALUES 
-(1, 1, 2, 220, 'active', 50000.00),
-(2, 2, 1, 220, 'active', 50000.00),
-(3, 1, 3, 220, 'active', 75000.00),
-(4, 3, 1, 220, 'active', 75000.00),
-(5, 2, 4, 220, 'active', 60000.00),
-(6, 4, 2, 220, 'active', 60000.00),
-(7, 3, 4, 220, 'maintenance', 85000.00),
-(8, 1, 4, 219, 'active', 70000.00),
-(9, 4, 5, 220, 'active', 80000.00),
-(10, 5, 4, 220, 'active', 80000.00),
-(11, 2, 5, 219, 'active', 70000.00),
-(12, 5, 2, 219, 'active', 70000.00);
+-- Universe 2: Big Bang Theory - Rajesh Koothrappali
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(2, 'Rajesh', 'Koothrappali', '1981-10-06', 2, 'Earth', 'India', 2);
 
--- ============================================================
--- 7. POPULATE PORTAL CALIBRATION TABLE
--- ============================================================
-INSERT INTO PortalCalibration (portal_id, calibration_code, engineer_id, calibration_timestamp) VALUES 
-(1, 'CAL-001-PRIME-ALT616-V1', 220, '2019-01-15 08:30:00'),
-(1, 'CAL-001-PRIME-ALT616-V2', 220, '2020-06-20 14:45:00'),
-(2, 'CAL-002-ALT616-PRIME-V1', 220, '2019-02-01 09:00:00'),
-(3, 'CAL-003-PRIME-DARK-V1', 220, '2019-03-10 11:20:00'),
-(3, 'CAL-003-PRIME-DARK-V2', 220, '2021-07-08 13:45:00'),
-(4, 'CAL-004-DARK-PRIME-V1', 220, '2019-04-05 10:00:00'),
-(5, 'CAL-005-ALT616-GOLDEN-V1', 220, '2020-01-15 08:30:00'),
-(6, 'CAL-006-GOLDEN-ALT616-V1', 220, '2020-02-01 09:00:00'),
-(7, 'CAL-007-DARK-GOLDEN-V1', 220, '2021-03-10 11:20:00'),
-(8, 'CAL-008-PRIME-GOLDEN-V1', 219, '2020-05-15 10:30:00'),
-(9, 'CAL-009-GOLDEN-FUTURE-V1', 220, '2021-06-10 14:00:00'),
-(10, 'CAL-010-FUTURE-GOLDEN-V1', 220, '2021-07-01 09:30:00'),
-(11, 'CAL-011-ALT616-FUTURE-V1', 219, '2020-08-20 11:15:00'),
-(12, 'CAL-012-FUTURE-ALT616-V1', 219, '2020-09-10 13:45:00');
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(2, 1, '2023-01-15', 'active', NULL, 4);
 
--- ============================================================
--- 8. POPULATE TRANSACTION TABLE
--- ============================================================
-INSERT INTO Transaction (from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES 
-(1, 1, 'investment', 5000000.00, '2015-01-15', 'completed'),
-(5, 5, 'investment', 1000000.00, '2015-05-05', 'completed'),
-(6, 6, 'investment', 1000000.00, '2015-06-10', 'completed'),
-(7, 7, 'investment', 1000000.00, '2015-07-15', 'completed'),
-(8, 8, 'investment', 1000000.00, '2015-08-05', 'completed'),
-(9, 9, 'investment', 500000.00, '2015-09-15', 'completed'),
-(10, 10, 'investment', 500000.00, '2015-09-20', 'completed'),
-(11, 11, 'investment', 500000.00, '2015-10-05', 'completed'),
-(12, 12, 'investment', 500000.00, '2015-10-10', 'completed'),
-(13, 13, 'investment', 500000.00, '2015-10-15', 'completed'),
-(14, 14, 'investment', 500000.00, '2015-10-25', 'completed'),
-(15, 15, 'investment', 500000.00, '2015-10-30', 'completed'),
-(16, 16, 'investment', 500000.00, '2015-11-05', 'completed'),
-(17, 17, 'investment', 500000.00, '2015-11-10', 'completed'),
-(18, 18, 'investment', 50000.00, '2015-12-01', 'completed'),
-(19, 19, 'investment', 50000.00, '2015-12-05', 'completed'),
-(20, 20, 'investment', 50000.00, '2015-12-10', 'completed'),
-(1, 5, 'commission', 75000.00, '2015-06-01', 'completed'),
-(1, 6, 'commission', 75000.00, '2015-07-01', 'completed'),
-(1, 7, 'commission', 75000.00, '2015-08-01', 'completed'),
-(1, 8, 'commission', 75000.00, '2015-09-01', 'completed'),
-(1, 5, 'commission', 85000.00, '2015-07-01', 'completed'),
-(1, 6, 'commission', 85000.00, '2015-08-01', 'completed'),
-(1, 7, 'commission', 85000.00, '2015-09-01', 'completed'),
-(1, 8, 'commission', 85000.00, '2015-10-01', 'completed'),
-(5, 9, 'commission', 37500.00, '2015-10-01', 'completed'),
-(5, 10, 'commission', 37500.00, '2015-10-05', 'completed'),
-(5, 11, 'commission', 37500.00, '2015-10-10', 'completed'),
-(6, 12, 'commission', 37500.00, '2015-10-15', 'completed'),
-(6, 13, 'commission', 37500.00, '2015-10-20', 'completed'),
-(7, 14, 'commission', 37500.00, '2015-11-01', 'completed'),
-(7, 15, 'commission', 37500.00, '2015-11-05', 'completed'),
-(7, 16, 'commission', 37500.00, '2015-11-10', 'completed'),
-(8, 17, 'commission', 37500.00, '2015-11-15', 'completed'),
-(8, 18, 'commission', 37500.00, '2015-11-20', 'completed'),
-(8, 19, 'commission', 37500.00, '2015-11-25', 'completed'),
-(8, 20, 'commission', 37500.00, '2015-12-01', 'completed'),
-(9, 21, 'commission', 18750.00, '2015-12-10', 'completed'),
-(9, 22, 'commission', 18750.00, '2015-12-15', 'completed'),
-(10, 23, 'commission', 18750.00, '2015-12-20', 'completed'),
-(10, 24, 'commission', 18750.00, '2016-01-01', 'completed'),
-(11, 25, 'commission', 18750.00, '2016-01-05', 'completed'),
-(11, 26, 'commission', 18750.00, '2016-01-10', 'completed'),
-(12, 27, 'commission', 18750.00, '2016-01-15', 'completed'),
-(12, 28, 'commission', 18750.00, '2016-01-20', 'completed'),
-(13, 29, 'commission', 18750.00, '2016-01-25', 'completed'),
-(13, 30, 'commission', 18750.00, '2016-02-01', 'completed'),
-(14, 31, 'commission', 18750.00, '2016-02-05', 'completed'),
-(14, 32, 'commission', 18750.00, '2016-02-10', 'completed'),
-(15, 33, 'commission', 18750.00, '2016-02-15', 'completed'),
-(15, 34, 'commission', 18750.00, '2016-02-20', 'completed'),
-(16, 35, 'commission', 18750.00, '2016-02-25', 'completed'),
-(16, 36, 'commission', 18750.00, '2016-03-01', 'completed'),
-(17, 37, 'commission', 18750.00, '2016-03-05', 'completed'),
-(17, 38, 'commission', 18750.00, '2016-03-10', 'completed'),
-(18, 39, 'commission', 18750.00, '2016-03-15', 'completed'),
-(18, 40, 'commission', 18750.00, '2016-03-20', 'completed'),
-(19, 41, 'commission', 18750.00, '2016-03-25', 'completed'),
-(19, 42, 'commission', 18750.00, '2016-04-01', 'completed'),
-(20, 43, 'commission', 18750.00, '2016-04-05', 'completed'),
-(20, 44, 'commission', 18750.00, '2016-04-10', 'completed'),
-(45, 45, 'investment', 2500000.00, '2016-02-05', 'completed'),
-(49, 49, 'investment', 1000000.00, '2016-02-20', 'completed'),
-(50, 50, 'investment', 1000000.00, '2016-02-25', 'completed'),
-(51, 51, 'investment', 1000000.00, '2016-03-05', 'completed'),
-(52, 52, 'investment', 1000000.00, '2016-03-10', 'completed'),
-(53, 53, 'investment', 250000.00, '2016-03-20', 'completed'),
-(54, 54, 'investment', 250000.00, '2016-03-25', 'completed'),
-(55, 55, 'investment', 250000.00, '2016-04-01', 'completed'),
-(56, 56, 'investment', 250000.00, '2016-04-05', 'completed'),
-(57, 57, 'investment', 250000.00, '2016-04-10', 'completed'),
-(58, 58, 'investment', 250000.00, '2016-04-15', 'completed'),
-(59, 59, 'investment', 250000.00, '2016-04-20', 'completed'),
-(60, 60, 'investment', 250000.00, '2016-04-25', 'completed'),
-(61, 61, 'investment', 250000.00, '2016-05-01', 'completed'),
-(62, 62, 'investment', 250000.00, '2016-05-05', 'completed'),
-(63, 63, 'investment', 250000.00, '2016-05-10', 'completed'),
-(64, 64, 'investment', 250000.00, '2016-05-15', 'completed'),
-(45, 49, 'commission', 187500.00, '2016-03-01', 'completed'),
-(45, 50, 'commission', 187500.00, '2016-03-01', 'completed'),
-(45, 51, 'commission', 187500.00, '2016-03-01', 'completed'),
-(45, 52, 'commission', 187500.00, '2016-03-01', 'completed'),
-(49, 53, 'commission', 93750.00, '2016-04-01', 'completed'),
-(49, 54, 'commission', 93750.00, '2016-04-01', 'completed'),
-(49, 55, 'commission', 93750.00, '2016-04-01', 'completed'),
-(50, 56, 'commission', 93750.00, '2016-04-05', 'completed'),
-(50, 57, 'commission', 93750.00, '2016-04-05', 'completed'),
-(51, 58, 'commission', 93750.00, '2016-04-10', 'completed'),
-(51, 59, 'commission', 93750.00, '2016-04-10', 'completed'),
-(51, 60, 'commission', 93750.00, '2016-04-10', 'completed'),
-(52, 61, 'commission', 93750.00, '2016-04-15', 'completed'),
-(52, 62, 'commission', 93750.00, '2016-04-15', 'completed'),
-(52, 63, 'commission', 93750.00, '2016-04-15', 'completed'),
-(52, 64, 'commission', 93750.00, '2016-04-15', 'completed'),
-(53, 65, 'commission', 46875.00, '2016-05-20', 'completed'),
-(53, 66, 'commission', 46875.00, '2016-05-20', 'completed'),
-(54, 67, 'commission', 46875.00, '2016-05-25', 'completed'),
-(54, 68, 'commission', 46875.00, '2016-05-25', 'completed'),
-(55, 69, 'commission', 46875.00, '2016-06-01', 'completed'),
-(55, 70, 'commission', 46875.00, '2016-06-01', 'completed'),
-(56, 71, 'commission', 46875.00, '2016-06-05', 'completed'),
-(56, 72, 'commission', 46875.00, '2016-06-05', 'completed'),
-(57, 73, 'commission', 46875.00, '2016-06-10', 'completed'),
-(57, 74, 'commission', 46875.00, '2016-06-10', 'completed'),
-(58, 75, 'commission', 46875.00, '2016-06-15', 'completed'),
-(58, 76, 'commission', 46875.00, '2016-06-15', 'completed'),
-(59, 77, 'commission', 46875.00, '2016-06-20', 'completed'),
-(59, 78, 'commission', 46875.00, '2016-06-20', 'completed'),
-(60, 79, 'commission', 46875.00, '2016-06-25', 'completed'),
-(60, 80, 'commission', 46875.00, '2016-06-25', 'completed'),
-(61, 81, 'commission', 46875.00, '2016-07-01', 'completed'),
-(61, 82, 'commission', 46875.00, '2016-07-01', 'completed'),
-(62, 83, 'commission', 46875.00, '2016-07-05', 'completed'),
-(62, 84, 'commission', 46875.00, '2016-07-05', 'completed'),
-(63, 85, 'commission', 46875.00, '2016-07-10', 'completed'),
-(63, 86, 'commission', 46875.00, '2016-07-10', 'completed'),
-(64, 87, 'commission', 46875.00, '2016-07-15', 'completed'),
-(64, 88, 'commission', 46875.00, '2016-07-15', 'completed'),
-(89, 89, 'investment', 2500000.00, '2017-01-10', 'completed'),
-(93, 93, 'investment', 1000000.00, '2017-01-20', 'completed'),
-(94, 94, 'investment', 1000000.00, '2017-02-01', 'completed'),
-(95, 95, 'investment', 1000000.00, '2017-02-10', 'completed'),
-(96, 96, 'investment', 1000000.00, '2017-02-20', 'completed'),
-(97, 97, 'investment', 250000.00, '2017-03-01', 'completed'),
-(98, 98, 'investment', 250000.00, '2017-03-05', 'completed'),
-(99, 99, 'investment', 250000.00, '2017-03-10', 'completed'),
-(100, 100, 'investment', 250000.00, '2017-03-15', 'completed'),
-(101, 101, 'investment', 250000.00, '2017-03-20', 'completed'),
-(102, 102, 'investment', 250000.00, '2017-03-25', 'completed'),
-(103, 103, 'investment', 250000.00, '2017-03-30', 'completed'),
-(104, 104, 'investment', 250000.00, '2017-04-05', 'completed'),
-(105, 105, 'investment', 250000.00, '2017-04-10', 'completed'),
-(106, 106, 'investment', 250000.00, '2017-04-15', 'completed'),
-(107, 107, 'investment', 250000.00, '2017-04-20', 'completed'),
-(108, 108, 'investment', 250000.00, '2017-04-25', 'completed'),
-(89, 93, 'commission', 225000.00, '2017-02-01', 'completed'),
-(89, 94, 'commission', 225000.00, '2017-02-05', 'completed'),
-(89, 95, 'commission', 225000.00, '2017-02-10', 'completed'),
-(89, 96, 'commission', 225000.00, '2017-02-15', 'completed'),
-(93, 97, 'commission', 112500.00, '2017-03-05', 'completed'),
-(93, 98, 'commission', 112500.00, '2017-03-05', 'completed'),
-(93, 99, 'commission', 112500.00, '2017-03-05', 'completed'),
-(94, 100, 'commission', 112500.00, '2017-03-10', 'completed'),
-(94, 101, 'commission', 112500.00, '2017-03-10', 'completed'),
-(95, 102, 'commission', 112500.00, '2017-03-15', 'completed'),
-(95, 103, 'commission', 112500.00, '2017-03-15', 'completed'),
-(95, 104, 'commission', 112500.00, '2017-03-15', 'completed'),
-(96, 105, 'commission', 112500.00, '2017-03-20', 'completed'),
-(96, 106, 'commission', 112500.00, '2017-03-20', 'completed'),
-(96, 107, 'commission', 112500.00, '2017-03-20', 'completed'),
-(96, 108, 'commission', 112500.00, '2017-03-20', 'completed'),
-(135, 135, 'investment', 5000000.00, '2018-01-05', 'completed'),
-(139, 139, 'investment', 1000000.00, '2018-01-20', 'completed'),
-(140, 140, 'investment', 1000000.00, '2018-02-01', 'completed'),
-(141, 141, 'investment', 1000000.00, '2018-02-15', 'completed'),
-(142, 142, 'investment', 1000000.00, '2018-03-01', 'completed'),
-(135, 139, 'commission', 275000.00, '2018-02-01', 'completed'),
-(135, 140, 'commission', 275000.00, '2018-02-05', 'completed'),
-(135, 141, 'commission', 275000.00, '2018-02-10', 'completed'),
-(135, 142, 'commission', 275000.00, '2018-02-15', 'completed'),
-(179, 179, 'investment', 5000000.00, '2020-01-05', 'completed'),
-(183, 183, 'investment', 1000000.00, '2020-01-20', 'completed'),
-(184, 184, 'investment', 1000000.00, '2020-02-01', 'completed'),
-(185, 185, 'investment', 1000000.00, '2020-02-15', 'completed'),
-(186, 186, 'investment', 1000000.00, '2020-03-01', 'completed'),
-(179, 183, 'commission', 275000.00, '2020-02-01', 'completed'),
-(179, 184, 'commission', 275000.00, '2020-02-05', 'completed'),
-(179, 185, 'commission', 275000.00, '2020-02-10', 'completed'),
-(179, 186, 'commission', 275000.00, '2020-02-15', 'completed'),
-(45, 49, 'portal_maintenance', 5000.00, '2019-02-01', 'completed'),
-(1, 89, 'portal_maintenance', 7500.00, '2019-03-15', 'completed'),
-(89, 135, 'portal_maintenance', 6000.00, '2020-06-10', 'completed');
+-- Universe 3: Breaking Bad - Hank Schrader
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(3, 'Hank', 'Schrader', '1966-03-17', 3, 'Earth', 'USA', 3);
 
--- ============================================================
--- 9. POPULATE RECRUITMENT EVENT TABLE
--- ============================================================
-INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recruitment_method) VALUES 
-(1, 5, '2015-05-01', 'direct_pitch'),
-(1, 6, '2015-06-15', 'referral'),
-(1, 7, '2015-07-20', 'conference_presentation'),
-(1, 8, '2015-08-01', 'direct_pitch'),
-(5, 9, '2015-09-10', 'direct_pitch'),
-(5, 10, '2015-09-15', 'referral'),
-(5, 11, '2015-10-01', 'conference_presentation'),
-(6, 12, '2015-10-05', 'direct_pitch'),
-(6, 13, '2015-10-10', 'referral'),
-(7, 14, '2015-10-20', 'direct_pitch'),
-(7, 15, '2015-10-25', 'referral'),
-(7, 16, '2015-11-01', 'conference_presentation'),
-(8, 17, '2015-11-05', 'direct_pitch'),
-(8, 18, '2015-11-10', 'referral'),
-(8, 19, '2015-11-15', 'direct_pitch'),
-(8, 20, '2015-11-20', 'conference_presentation'),
-(9, 21, '2015-12-01', 'direct_pitch'),
-(9, 22, '2015-12-05', 'referral'),
-(10, 23, '2015-12-10', 'direct_pitch'),
-(10, 24, '2015-12-15', 'conference_presentation'),
-(11, 25, '2016-01-05', 'direct_pitch'),
-(11, 26, '2016-01-10', 'referral'),
-(12, 27, '2016-01-15', 'direct_pitch'),
-(12, 28, '2016-01-20', 'conference_presentation'),
-(13, 29, '2016-01-25', 'direct_pitch'),
-(13, 30, '2016-02-01', 'referral'),
-(14, 31, '2016-02-05', 'direct_pitch'),
-(14, 32, '2016-02-10', 'conference_presentation'),
-(15, 33, '2016-02-15', 'direct_pitch'),
-(15, 34, '2016-02-20', 'referral'),
-(16, 35, '2016-02-25', 'direct_pitch'),
-(16, 36, '2016-03-01', 'conference_presentation'),
-(17, 37, '2016-03-05', 'direct_pitch'),
-(17, 38, '2016-03-10', 'referral'),
-(18, 39, '2016-03-15', 'direct_pitch'),
-(18, 40, '2016-03-20', 'conference_presentation'),
-(19, 41, '2016-03-25', 'direct_pitch'),
-(19, 42, '2016-04-01', 'referral'),
-(20, 43, '2016-04-05', 'direct_pitch'),
-(20, 44, '2016-04-10', 'conference_presentation'),
-(45, 49, '2016-02-15', 'direct_pitch'),
-(45, 50, '2016-02-20', 'referral'),
-(45, 51, '2016-03-01', 'direct_pitch'),
-(45, 52, '2016-03-05', 'conference_presentation'),
-(49, 53, '2016-03-15', 'direct_pitch'),
-(49, 54, '2016-03-20', 'referral'),
-(49, 55, '2016-03-25', 'direct_pitch'),
-(50, 56, '2016-04-01', 'direct_pitch'),
-(50, 57, '2016-04-05', 'referral'),
-(51, 58, '2016-04-10', 'direct_pitch'),
-(51, 59, '2016-04-15', 'conference_presentation'),
-(51, 60, '2016-04-20', 'direct_pitch'),
-(52, 61, '2016-04-25', 'direct_pitch'),
-(52, 62, '2016-05-01', 'referral'),
-(52, 63, '2016-05-05', 'direct_pitch'),
-(52, 64, '2016-05-10', 'conference_presentation'),
-(53, 65, '2016-05-15', 'direct_pitch'),
-(53, 66, '2016-05-20', 'referral'),
-(54, 67, '2016-05-25', 'direct_pitch'),
-(54, 68, '2016-06-01', 'conference_presentation'),
-(55, 69, '2016-06-05', 'direct_pitch'),
-(55, 70, '2016-06-10', 'referral'),
-(56, 71, '2016-06-15', 'direct_pitch'),
-(56, 72, '2016-06-20', 'conference_presentation'),
-(57, 73, '2016-06-25', 'direct_pitch'),
-(57, 74, '2016-07-01', 'referral'),
-(58, 75, '2016-07-05', 'direct_pitch'),
-(58, 76, '2016-07-10', 'conference_presentation'),
-(59, 77, '2016-07-15', 'direct_pitch'),
-(59, 78, '2016-07-20', 'referral'),
-(60, 79, '2016-07-25', 'direct_pitch'),
-(60, 80, '2016-08-01', 'conference_presentation'),
-(61, 81, '2016-08-05', 'direct_pitch'),
-(61, 82, '2016-08-10', 'referral'),
-(62, 83, '2016-08-15', 'direct_pitch'),
-(62, 84, '2016-08-20', 'conference_presentation'),
-(63, 85, '2016-08-25', 'direct_pitch'),
-(63, 86, '2016-09-01', 'referral'),
-(64, 87, '2016-09-05', 'direct_pitch'),
-(64, 88, '2016-09-10', 'conference_presentation'),
-(89, 93, '2017-01-15', 'direct_pitch'),
-(89, 94, '2017-02-01', 'referral'),
-(89, 95, '2017-02-15', 'direct_pitch'),
-(89, 96, '2017-03-01', 'conference_presentation'),
-(93, 97, '2017-03-15', 'direct_pitch'),
-(93, 98, '2017-03-20', 'referral'),
-(93, 99, '2017-03-25', 'direct_pitch'),
-(94, 100, '2017-04-01', 'direct_pitch'),
-(94, 101, '2017-04-05', 'referral'),
-(95, 102, '2017-04-10', 'direct_pitch'),
-(95, 103, '2017-04-15', 'conference_presentation'),
-(95, 104, '2017-04-20', 'direct_pitch'),
-(96, 105, '2017-04-25', 'direct_pitch'),
-(96, 106, '2017-05-01', 'referral'),
-(96, 107, '2017-05-05', 'direct_pitch'),
-(96, 108, '2017-05-10', 'conference_presentation'),
-(135, 139, '2018-01-15', 'direct_pitch'),
-(135, 140, '2018-02-01', 'referral'),
-(135, 141, '2018-02-15', 'direct_pitch'),
-(135, 142, '2018-03-01', 'conference_presentation'),
-(179, 183, '2020-01-15', 'direct_pitch'),
-(179, 184, '2020-02-01', 'referral'),
-(179, 185, '2020-02-15', 'direct_pitch'),
-(179, 186, '2020-03-01', 'conference_presentation');
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(3, 1, '2023-01-15', 'active', NULL, 4);
 
--- ============================================================
--- 10. POPULATE MARKETING CAMPAIGN TABLE
--- ============================================================
-INSERT INTO MarketingCampaign (program_id, program_code) VALUES 
-(1, 'VOUGHT-PRIME-001'),
-(2, 'VOUGHT-ALT616-001'),
-(3, 'VOUGHT-DARK-001'),
-(4, 'VOUGHT-GOLDEN-001'),
-(5, 'VOUGHT-FUTURE-001');
+-- Universe 4: Harry Potter - Neville Longbottom
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(4, 'Neville', 'Longbottom', '1980-07-30', 4, 'Earth', 'United Kingdom', 4);
 
--- ============================================================
--- 11. POPULATE MARKETING CAMPAIGN MEMBERS INVOLVED TABLE
--- ============================================================
-INSERT INTO MarketingCampaign_MembersInvolved (program_id, members_involved) VALUES 
-(1, 1), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1, 17), (1, 18), (1, 19), (1, 20),
-(2, 45), (2, 49), (2, 50), (2, 51), (2, 52), (2, 53), (2, 54), (2, 55), (2, 56), (2, 57), (2, 58), (2, 59), (2, 60), (2, 61), (2, 62), (2, 63), (2, 64),
-(3, 89), (3, 93), (3, 94), (3, 95), (3, 96), (3, 97), (3, 98), (3, 99), (3, 100), (3, 101), (3, 102), (3, 103), (3, 104), (3, 105), (3, 106), (3, 107), (3, 108),
-(4, 135), (4, 139), (4, 140), (4, 141), (4, 142), (4, 143), (4, 144), (4, 145), (4, 146), (4, 147), (4, 148), (4, 149), (4, 150), (4, 151), (4, 152), (4, 153), (4, 154),
-(5, 179), (5, 183), (5, 184), (5, 185), (5, 186), (5, 187), (5, 188), (5, 189), (5, 190), (5, 191), (5, 192), (5, 193), (5, 194), (5, 195), (5, 196), (5, 197), (5, 198);
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(4, 1, '2023-01-15', 'active', NULL, 4);
 
--- ============================================================
--- 12. POPULATE MARKETING CAMPAIGN ADDITIONAL TABLE
--- ============================================================
-INSERT INTO MarketingCampaignAdditional (program_code, universe_id, name, budget, start_date, end_date, status) VALUES 
-('VOUGHT-PRIME-001', 1, 'Prime Universe Recruitment Initiative', 500000.00, '2015-01-01', '2016-12-31', 'completed'),
-('VOUGHT-ALT616-001', 2, 'Alternate Earth-616 Expansion', 450000.00, '2016-02-01', '2016-12-31', 'completed'),
-('VOUGHT-DARK-001', 3, 'Dark Dimension Integration', 350000.00, '2017-01-01', '2017-12-31', 'completed'),
-('VOUGHT-GOLDEN-001', 4, 'Golden Age Universe Outreach', 550000.00, '2018-01-01', '2019-12-31', 'active'),
-('VOUGHT-FUTURE-001', 5, 'Future Timeline Pilot Program', 400000.00, '2020-01-01', '2020-12-31', 'active');
+-- Universe 5: Family Guy - Peter Griffin
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(5, 'Peter', 'Griffin', '1966-09-15', 5, 'Earth', 'USA', 5);
 
--- ============================================================
--- 13. UPDATE UNIVERSE TABLE WITH FIRST_MEMBER_ID
--- ============================================================
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(5, 1, '2023-01-15', 'active', NULL, 4);
+
+-- Universe 6: Marvel - Thor
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(6, 'Thor', 'Odinson', '964-01-01', 6, 'Asgard', 'Asgard', 6);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(6, 1, '2023-01-15', 'active', NULL, 4);
+
+-- Universe 7: Invincible - Immortal
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(7, 'Abraham', 'Lincoln', '1809-02-12', 7, 'Earth', 'USA', 7);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(7, 1, '2023-01-15', 'active', NULL, 4);
+
+-- =====================================================
+-- STEP 4: Update Universe table with first_member_id
+-- =====================================================
 UPDATE Universe SET first_member_id = 1 WHERE universe_id = 1;
-UPDATE Universe SET first_member_id = 45 WHERE universe_id = 2;
-UPDATE Universe SET first_member_id = 89 WHERE universe_id = 3;
-UPDATE Universe SET first_member_id = 135 WHERE universe_id = 4;
-UPDATE Universe SET first_member_id = 179 WHERE universe_id = 5;
+UPDATE Universe SET first_member_id = 2 WHERE universe_id = 2;
+UPDATE Universe SET first_member_id = 3 WHERE universe_id = 3;
+UPDATE Universe SET first_member_id = 4 WHERE universe_id = 4;
+UPDATE Universe SET first_member_id = 5 WHERE universe_id = 5;
+UPDATE Universe SET first_member_id = 6 WHERE universe_id = 6;
+UPDATE Universe SET first_member_id = 7 WHERE universe_id = 7;
 
-SET FOREIGN_KEY_CHECKS = 1;
+-- =====================================================
+-- STEP 5: Insert Tier 2 Members (28 Members - 4 per Tier 1 Member)
+-- =====================================================
+
+-- Joey's Recruits (Friends Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(8, 'Chandler', 'Bing', '1968-04-08', 1, 'Earth', 'USA', 1),
+(9, 'Ross', 'Geller', '1967-10-18', 1, 'Earth', 'USA', 1),
+(10, 'Monica', 'Geller', '1969-03-22', 1, 'Earth', 'USA', 1),
+(11, 'Phoebe', 'Buffay', '1968-02-16', 1, 'Earth', 'USA', 1);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(8, 2, '2023-03-01', 'active', 1, 4),
+(9, 2, '2023-03-05', 'active', 1, 4),
+(10, 2, '2023-03-10', 'active', 1, 4),
+(11, 2, '2023-03-15', 'active', 1, 4);
+
+-- Rajesh's Recruits (Big Bang Theory Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(12, 'Sheldon', 'Cooper', '1980-02-26', 2, 'Earth', 'USA', 2),
+(13, 'Leonard', 'Hofstadter', '1980-05-17', 2, 'Earth', 'USA', 2),
+(14, 'Howard', 'Wolowitz', '1981-03-01', 2, 'Earth', 'USA', 2),
+(15, 'Bernadette', 'Rostenkowski', '1984-12-12', 2, 'Earth', 'USA', 2);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(12, 2, '2023-03-01', 'active', 2, 4),
+(13, 2, '2023-03-05', 'active', 2, 4),
+(14, 2, '2023-03-10', 'active', 2, 4),
+(15, 2, '2023-03-15', 'active', 2, 4);
+
+-- Hank's Recruits (Breaking Bad Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(16, 'Walter', 'White', '1958-09-07', 3, 'Earth', 'USA', 3),
+(17, 'Jesse', 'Pinkman', '1984-09-24', 3, 'Earth', 'USA', 3),
+(18, 'Skyler', 'White', '1970-08-11', 3, 'Earth', 'USA', 3),
+(19, 'Saul', 'Goodman', '1960-11-12', 3, 'Earth', 'USA', 3);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(16, 2, '2023-03-01', 'active', 3, 4),
+(17, 2, '2023-03-05', 'active', 3, 4),
+(18, 2, '2023-03-10', 'active', 3, 4),
+(19, 2, '2023-03-15', 'active', 3, 4);
+
+-- Neville's Recruits (Harry Potter Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(20, 'Harry', 'Potter', '1980-07-31', 4, 'Earth', 'United Kingdom', 4),
+(21, 'Hermione', 'Granger', '1979-09-19', 4, 'Earth', 'United Kingdom', 4),
+(22, 'Ron', 'Weasley', '1980-03-01', 4, 'Earth', 'United Kingdom', 4),
+(23, 'Luna', 'Lovegood', '1981-02-13', 4, 'Earth', 'United Kingdom', 4);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(20, 2, '2023-03-01', 'active', 4, 4),
+(21, 2, '2023-03-05', 'active', 4, 4),
+(22, 2, '2023-03-10', 'active', 4, 4),
+(23, 2, '2023-03-15', 'active', 4, 4);
+
+-- Peter's Recruits (Family Guy Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(24, 'Lois', 'Griffin', '1968-02-18', 5, 'Earth', 'USA', 5),
+(25, 'Glenn', 'Quagmire', '1948-03-25', 5, 'Earth', 'USA', 5),
+(26, 'Cleveland', 'Brown', '1966-02-07', 5, 'Earth', 'USA', 5),
+(27, 'Joe', 'Swanson', '1963-11-17', 5, 'Earth', 'USA', 5);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(24, 2, '2023-03-01', 'active', 5, 4),
+(25, 2, '2023-03-05', 'active', 5, 4),
+(26, 2, '2023-03-10', 'active', 5, 4),
+(27, 2, '2023-03-15', 'active', 5, 4);
+
+-- Thor's Recruits (Marvel Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(28, 'Loki', 'Laufeyson', '965-01-01', 6, 'Jotunheim', 'Asgard', 6),
+(29, 'Tony', 'Stark', '1970-05-29', 6, 'Earth', 'USA', 6),
+(30, 'Steve', 'Rogers', '1918-07-04', 6, 'Earth', 'USA', 6),
+(31, 'Natasha', 'Romanoff', '1984-11-22', 6, 'Earth', 'Russia', 6);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(28, 2, '2023-03-01', 'active', 6, 4),
+(29, 2, '2023-03-05', 'active', 6, 4),
+(30, 2, '2023-03-10', 'active', 6, 4),
+(31, 2, '2023-03-15', 'active', 6, 4);
+
+-- Immortal's Recruits (Invincible Universe) - 4 members
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(32, 'Mark', 'Grayson', '2001-03-19', 7, 'Earth', 'USA', 7),
+(33, 'Nolan', 'Grayson', '1982-06-15', 7, 'Viltrum', 'Viltrum Empire', 7),
+(34, 'Debbie', 'Grayson', '1975-08-22', 7, 'Earth', 'USA', 7),
+(35, 'Atom', 'Eve', '2001-07-29', 7, 'Earth', 'USA', 7);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(32, 2, '2023-03-01', 'active', 7, 4),
+(33, 2, '2023-03-05', 'active', 7, 4),
+(34, 2, '2023-03-10', 'active', 7, 4),
+(35, 2, '2023-03-15', 'active', 7, 4);
+
+-- =====================================================
+-- STEP 6: Insert Tier 3 Members (112 Members - 4 per Tier 2 Member)
+-- =====================================================
+
+-- Chandler's Recruits (Friends Universe - Tier 3) - participant_id 36-39
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(36, 'Janice', 'Hosenstein', '1969-05-12', 1, 'Earth', 'USA', 1),
+(37, 'Richard', 'Burke', '1950-11-20', 1, 'Earth', 'USA', 1),
+(38, 'Mike', 'Hannigan', '1968-08-30', 1, 'Earth', 'USA', 1),
+(39, 'Gunther', 'Central-Perk', '1962-03-10', 1, 'Earth', 'USA', 1);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(36, 3, '2023-06-01', 'active', 8, 0),
+(37, 3, '2023-06-10', 'active', 8, 0),
+(38, 3, '2023-06-20', 'active', 8, 0),
+(39, 3, '2023-07-01', 'active', 8, 0);
+
+-- Ross's Recruits (Friends Universe - Tier 3) - participant_id 40-43
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(40, 'Rachel', 'Green', '1969-05-05', 1, 'Earth', 'USA', 1),
+(41, 'Emily', 'Waltham', '1970-02-14', 1, 'Earth', 'United Kingdom', 1),
+(42, 'Carol', 'Willick', '1965-07-19', 1, 'Earth', 'USA', 1),
+(43, 'Julie', 'Johnson', '1968-11-28', 1, 'Earth', 'USA', 1);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(40, 3, '2023-06-05', 'active', 9, 0),
+(41, 3, '2023-06-15', 'active', 9, 0),
+(42, 3, '2023-06-25', 'active', 9, 0),
+(43, 3, '2023-07-05', 'active', 9, 0);
+
+-- Monica's Recruits (Friends Universe - Tier 3) - participant_id 44-47
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(44, 'Paul', 'Stevens', '1948-09-22', 1, 'Earth', 'USA', 1),
+(45, 'Pete', 'Becker', '1965-04-15', 1, 'Earth', 'USA', 1),
+(46, 'Fun Bobby', 'Reynolds', '1967-06-30', 1, 'Earth', 'USA', 1),
+(47, 'Tommy', 'Martinez', '1969-12-08', 1, 'Earth', 'USA', 1);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(44, 3, '2023-07-10', 'active', 10, 0),
+(45, 3, '2023-07-20', 'active', 10, 0),
+(46, 3, '2023-08-01', 'active', 10, 0),
+(47, 3, '2023-08-10', 'active', 10, 0);
+
+-- Phoebe's Recruits (Friends Universe - Tier 3) - participant_id 48-51
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(48, 'David', 'Scientist', '1966-10-12', 1, 'Earth', 'USA', 1),
+(49, 'Ursula', 'Buffay', '1968-02-16', 1, 'Earth', 'USA', 1),
+(50, 'Gary', 'Officer', '1960-08-04', 1, 'Earth', 'USA', 1),
+(51, 'Ryan', 'Navy', '1972-01-29', 1, 'Earth', 'USA', 1);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(48, 3, '2023-08-15', 'active', 11, 0),
+(49, 3, '2023-08-25', 'active', 11, 0),
+(50, 3, '2023-09-05', 'active', 11, 0),
+(51, 3, '2023-09-15', 'active', 11, 0);
+
+-- Sheldon's Recruits (Big Bang Theory Universe - Tier 3) - participant_id 52-55
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(52, 'Amy', 'Farrah Fowler', '1979-12-17', 2, 'Earth', 'USA', 2),
+(53, 'Stuart', 'Bloom', '1981-05-21', 2, 'Earth', 'USA', 2),
+(54, 'Barry', 'Kripke', '1980-11-30', 2, 'Earth', 'USA', 2),
+(55, 'Leslie', 'Winkle', '1981-03-14', 2, 'Earth', 'USA', 2);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(52, 3, '2023-09-20', 'active', 12, 0),
+(53, 3, '2023-10-01', 'active', 12, 0),
+(54, 3, '2023-10-15', 'active', 12, 0),
+(55, 3, '2023-11-01', 'active', 12, 0);
+
+-- Leonard's Recruits (Big Bang Theory Universe - Tier 3) - participant_id 56-59
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(56, 'Penny', 'Hofstadter', '1985-11-30', 2, 'Earth', 'USA', 2),
+(57, 'Priya', 'Koothrappali', '1983-09-18', 2, 'Earth', 'India', 2),
+(58, 'Stephanie', 'Barnett', '1982-06-25', 2, 'Earth', 'USA', 2),
+(59, 'Joyce', 'Kim', '1981-04-07', 2, 'Earth', 'USA', 2);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(56, 3, '2023-11-10', 'active', 13, 0),
+(57, 3, '2023-11-20', 'active', 13, 0),
+(58, 3, '2023-12-01', 'active', 13, 0),
+(59, 3, '2023-12-15', 'active', 13, 0);
+
+-- Howard's Recruits (Big Bang Theory Universe - Tier 3) - participant_id 60-63
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(60, 'Debbie', 'Wolowitz', '1952-03-10', 2, 'Earth', 'USA', 2),
+(61, 'Christy', 'Vanderbel', '1982-07-22', 2, 'Earth', 'USA', 2),
+(62, 'Emily', 'Sweeney', '1985-01-16', 2, 'Earth', 'USA', 2),
+(63, 'Dmitri', 'Rezinov', '1975-09-05', 2, 'Earth', 'Russia', 2);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(60, 3, '2024-01-05', 'active', 14, 0),
+(61, 3, '2024-01-15', 'active', 14, 0),
+(62, 3, '2024-01-25', 'active', 14, 0),
+(63, 3, '2024-02-05', 'active', 14, 0);
+
+-- Bernadette's Recruits (Big Bang Theory Universe - Tier 3) - participant_id 64-67
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(64, 'Dan', 'Rostenkowski', '1950-08-12', 2, 'Earth', 'USA', 2),
+(65, 'Mike', 'Rostenkowski', '1955-11-03', 2, 'Earth', 'USA', 2),
+(66, 'Glenn', 'Childs', '1978-05-19', 2, 'Earth', 'USA', 2),
+(67, 'Marissa', 'Johnson', '1983-02-28', 2, 'Earth', 'USA', 2);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(64, 3, '2024-02-10', 'active', 15, 0),
+(65, 3, '2024-02-20', 'active', 15, 0),
+(66, 3, '2025-01-15', 'active', 15, 0),
+(67, 3, '2025-06-10', 'active', 15, 0);
+
+-- Walter's Recruits (Breaking Bad Universe - Tier 3) - participant_id 68-71
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(68, 'Walter', 'White Jr', '1993-07-08', 3, 'Earth', 'USA', 3),
+(69, 'Gus', 'Fring', '1958-04-26', 3, 'Earth', 'Chile', 3),
+(70, 'Mike', 'Ehrmantraut', '1944-09-05', 3, 'Earth', 'USA', 3),
+(71, 'Lydia', 'Rodarte-Quayle', '1978-11-14', 3, 'Earth', 'USA', 3);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(68, 3, '2025-01-15', 'active', 16, 0),
+(69, 3, '2024-05-01', 'active', 16, 0),
+(70, 3, '2025-06-10', 'active', 16, 0),
+(71, 3, '2024-07-05', 'active', 16, 0);
+
+-- Jesse's Recruits (Breaking Bad Universe - Tier 3) - participant_id 72-75
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(72, 'Badger', 'Mayhew', '1984-06-18', 3, 'Earth', 'USA', 3),
+(73, 'Skinny', 'Pete', '1983-12-07', 3, 'Earth', 'USA', 3),
+(74, 'Jane', 'Margolis', '1982-04-15', 3, 'Earth', 'USA', 3),
+(75, 'Andrea', 'Cantillo', '1984-10-22', 3, 'Earth', 'USA', 3);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(72, 3, '2025-01-15', 'active', 17, 0),
+(73, 3, '2024-05-01', 'active', 17, 0),
+(74, 3, '2025-06-10', 'active', 17, 0),
+(75, 3, '2024-07-05', 'active', 17, 0);
+
+-- Skyler's Recruits (Breaking Bad Universe - Tier 3) - participant_id 76-79
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(76, 'Marie', 'Schrader', '1968-08-15', 3, 'Earth', 'USA', 3),
+(77, 'Ted', 'Beneke', '1965-03-22', 3, 'Earth', 'USA', 3),
+(78, 'Francesca', 'Liddy', '1975-11-09', 3, 'Earth', 'USA', 3),
+(79, 'Huell', 'Babineaux', '1970-07-27', 3, 'Earth', 'USA', 3);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(76, 3, '2025-01-15', 'active', 18, 0),
+(77, 3, '2024-05-01', 'active', 18, 0),
+(78, 3, '2025-06-10', 'active', 18, 0),
+(79, 3, '2024-07-05', 'active', 18, 0);
+
+-- Saul's Recruits (Breaking Bad Universe - Tier 3) - participant_id 80-83
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(80, 'Kim', 'Wexler', '1968-02-13', 3, 'Earth', 'USA', 3),
+(81, 'Chuck', 'McGill', '1944-01-08', 3, 'Earth', 'USA', 3),
+(82, 'Nacho', 'Varga', '1983-05-19', 3, 'Earth', 'USA', 3),
+(83, 'Lalo', 'Salamanca', '1974-09-30', 3, 'Earth', 'Mexico', 3);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(80, 3, '2025-01-15', 'active', 19, 0),
+(81, 3, '2024-05-01', 'active', 19, 0),
+(82, 3, '2025-06-10', 'active', 19, 0),
+(83, 3, '2024-07-05', 'active', 19, 0);
+
+-- Harry's Recruits (Harry Potter Universe - Tier 3) - participant_id 84-87
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(84, 'Ginny', 'Weasley', '1981-08-11', 4, 'Earth', 'United Kingdom', 4),
+(85, 'Cho', 'Chang', '1979-04-07', 4, 'Earth', 'United Kingdom', 4),
+(86, 'Cedric', 'Diggory', '1977-09-30', 4, 'Earth', 'United Kingdom', 4),
+(87, 'Dean', 'Thomas', '1980-06-27', 4, 'Earth', 'United Kingdom', 4);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(84, 3, '2025-01-15', 'active', 20, 0),
+(85, 3, '2024-05-01', 'active', 20, 0),
+(86, 3, '2025-06-10', 'active', 20, 0),
+(87, 3, '2024-07-05', 'active', 20, 0);
+
+-- Hermione's Recruits (Harry Potter Universe - Tier 3) - participant_id 88-91
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(88, 'Viktor', 'Krum', '1976-08-15', 4, 'Earth', 'Bulgaria', 4),
+(89, 'Cormac', 'McLaggen', '1979-11-22', 4, 'Earth', 'United Kingdom', 4),
+(90, 'Lavender', 'Brown', '1980-04-03', 4, 'Earth', 'United Kingdom', 4),
+(91, 'Parvati', 'Patil', '1980-09-19', 4, 'Earth', 'United Kingdom', 4);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(88, 3, '2025-01-15', 'active', 21, 0),
+(89, 3, '2024-05-01', 'active', 21, 0),
+(90, 3, '2025-06-10', 'active', 21, 0),
+(91, 3, '2024-07-05', 'active', 21, 0);
+
+-- Ron's Recruits (Harry Potter Universe - Tier 3) - participant_id 92-95
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(92, 'Fred', 'Weasley', '1978-04-01', 4, 'Earth', 'United Kingdom', 4),
+(93, 'George', 'Weasley', '1978-04-01', 4, 'Earth', 'United Kingdom', 4),
+(94, 'Percy', 'Weasley', '1976-08-22', 4, 'Earth', 'United Kingdom', 4),
+(95, 'Bill', 'Weasley', '1970-11-29', 4, 'Earth', 'United Kingdom', 4);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(92, 3, '2025-01-15', 'active', 22, 0),
+(93, 3, '2024-05-01', 'active', 22, 0),
+(94, 3, '2025-06-10', 'active', 22, 0),
+(95, 3, '2024-07-05', 'active', 22, 0);
+
+-- Luna's Recruits (Harry Potter Universe - Tier 3) - participant_id 96-99
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(96, 'Seamus', 'Finnigan', '1980-07-12', 4, 'Earth', 'Ireland', 4),
+(97, 'Colin', 'Creevey', '1981-05-20', 4, 'Earth', 'United Kingdom', 4),
+(98, 'Dennis', 'Creevey', '1983-09-01', 4, 'Earth', 'United Kingdom', 4),
+(99, 'Ernie', 'Macmillan', '1980-02-17', 4, 'Earth', 'United Kingdom', 4);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(96, 3, '2025-01-15', 'active', 23, 0),
+(97, 3, '2024-05-01', 'active', 23, 0),
+(98, 3, '2025-06-10', 'active', 23, 0),
+(99, 3, '2024-07-05', 'active', 23, 0);
+
+-- Lois's Recruits (Family Guy Universe - Tier 3) - participant_id 100-103
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(100, 'Meg', 'Griffin', '1983-03-23', 5, 'Earth', 'USA', 5),
+(101, 'Chris', 'Griffin', '1985-10-25', 5, 'Earth', 'USA', 5),
+(102, 'Stewie', 'Griffin', '2005-09-11', 5, 'Earth', 'USA', 5),
+(103, 'Brian', 'Griffin', '1999-04-19', 5, 'Earth', 'USA', 5);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(100, 3, '2025-01-15', 'active', 24, 0),
+(101, 3, '2024-05-01', 'active', 24, 0),
+(102, 3, '2025-06-10', 'active', 24, 0),
+(103, 3, '2024-07-05', 'active', 24, 0);
+
+-- Quagmire's Recruits (Family Guy Universe - Tier 3) - participant_id 104-107
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(104, 'Ida', 'Davis', '1946-12-15', 5, 'Earth', 'USA', 5),
+(105, 'Jillian', 'Russell', '1982-06-08', 5, 'Earth', 'USA', 5),
+(106, 'Cheryl', 'Tiegs', '1947-09-25', 5, 'Earth', 'USA', 5),
+(107, 'Joan', 'Quagmire', '1930-01-10', 5, 'Earth', 'USA', 5);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(104, 3, '2025-01-15', 'active', 25, 0),
+(105, 3, '2024-05-01', 'active', 25, 0),
+(106, 3, '2025-06-10', 'active', 25, 0),
+(107, 3, '2024-07-05', 'active', 25, 0);
+
+-- Cleveland's Recruits (Family Guy Universe - Tier 3) - participant_id 108-111
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(108, 'Donna', 'Tubbs', '1968-07-29', 5, 'Earth', 'USA', 5),
+(109, 'Loretta', 'Brown', '1965-05-16', 5, 'Earth', 'USA', 5),
+(110, 'Rallo', 'Tubbs', '2005-12-04', 5, 'Earth', 'USA', 5),
+(111, 'Roberta', 'Tubbs', '1991-02-20', 5, 'Earth', 'USA', 5);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(108, 3, '2025-01-15', 'active', 26, 0),
+(109, 3, '2024-05-01', 'active', 26, 0),
+(110, 3, '2025-06-10', 'active', 26, 0),
+(111, 3, '2024-07-05', 'active', 26, 0);
+
+-- Joe's Recruits (Family Guy Universe - Tier 3) - participant_id 112-115
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(112, 'Bonnie', 'Swanson', '1964-08-18', 5, 'Earth', 'USA', 5),
+(113, 'Kevin', 'Swanson', '1988-11-07', 5, 'Earth', 'USA', 5),
+(114, 'Susie', 'Swanson', '2005-04-20', 5, 'Earth', 'USA', 5),
+(115, 'Joe', 'Swanson Jr', '2006-01-25', 5, 'Earth', 'USA', 5);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(112, 3, '2025-01-15', 'active', 27, 0),
+(113, 3, '2024-05-01', 'active', 27, 0),
+(114, 3, '2025-06-10', 'active', 27, 0),
+(115, 3, '2024-07-05', 'active', 27, 0);
+
+-- Loki's Recruits (Marvel Universe - Tier 3) - participant_id 116-119
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(116, 'Sylvie', 'Laufeydottir', '982-06-15', 6, 'Asgard', 'Asgard', 6),
+(117, 'Mobius', 'Mobius', '1975-03-20', 6, 'Earth', 'USA', 6),
+(118, 'Hela', 'Odinsdottir', '800-10-01', 6, 'Hel', 'Asgard', 6),
+(119, 'Valkyrie', 'Brunnhilde', '1000-05-12', 6, 'Asgard', 'Asgard', 6);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(116, 3, '2025-01-15', 'active', 28, 0),
+(117, 3, '2024-05-01', 'active', 28, 0),
+(118, 3, '2025-06-10', 'active', 28, 0),
+(119, 3, '2024-07-05', 'active', 28, 0);
+
+-- Tony's Recruits (Marvel Universe - Tier 3) - participant_id 120-123
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(120, 'Pepper', 'Potts', '1974-02-14', 6, 'Earth', 'USA', 6),
+(121, 'James', 'Rhodes', '1968-10-06', 6, 'Earth', 'USA', 6),
+(122, 'Happy', 'Hogan', '1969-07-30', 6, 'Earth', 'USA', 6),
+(123, 'Obadiah', 'Stane', '1950-04-15', 6, 'Earth', 'USA', 6);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(120, 3, '2025-01-15', 'active', 29, 0),
+(121, 3, '2024-05-01', 'active', 29, 0),
+(122, 3, '2025-06-10', 'active', 29, 0),
+(123, 3, '2024-07-05', 'active', 29, 0);
+
+-- Steve's Recruits (Marvel Universe - Tier 3) - participant_id 124-127
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(124, 'Bucky', 'Barnes', '1917-03-10', 6, 'Earth', 'USA', 6),
+(125, 'Sam', 'Wilson', '1978-09-23', 6, 'Earth', 'USA', 6),
+(126, 'Peggy', 'Carter', '1921-04-09', 6, 'Earth', 'United Kingdom', 6),
+(127, 'Sharon', 'Carter', '1985-08-16', 6, 'Earth', 'USA', 6);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(124, 3, '2025-01-15', 'active', 30, 0),
+(125, 3, '2024-05-01', 'active', 30, 0),
+(126, 3, '2025-06-10', 'active', 30, 0),
+(127, 3, '2024-07-05', 'active', 30, 0);
+
+-- Natasha's Recruits (Marvel Universe - Tier 3) - participant_id 128-131
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(128, 'Clint', 'Barton', '1971-01-07', 6, 'Earth', 'USA', 6),
+(129, 'Yelena', 'Belova', '1988-03-22', 6, 'Earth', 'Russia', 6),
+(130, 'Alexei', 'Shostakov', '1954-11-19', 6, 'Earth', 'Russia', 6),
+(131, 'Melina', 'Vostokoff', '1962-06-02', 6, 'Earth', 'Russia', 6);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(128, 3, '2025-01-15', 'active', 31, 0),
+(129, 3, '2024-05-01', 'active', 31, 0),
+(130, 3, '2025-06-10', 'active', 31, 0),
+(131, 3, '2024-07-05', 'active', 31, 0);
+
+-- Mark's Recruits (Invincible Universe - Tier 3) - participant_id 132-135
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(132, 'William', 'Clockwell', '2001-06-18', 7, 'Earth', 'USA', 7),
+(133, 'Amber', 'Bennett', '2001-11-24', 7, 'Earth', 'USA', 7),
+(134, 'Rex', 'Sloan', '1995-04-08', 7, 'Earth', 'USA', 7),
+(135, 'Kate', 'Cha', '1997-09-14', 7, 'Earth', 'USA', 7);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(132, 3, '2025-01-15', 'active', 32, 0),
+(133, 3, '2024-05-01', 'active', 32, 0),
+(134, 3, '2025-06-10', 'active', 32, 0),
+(135, 3, '2024-07-05', 'active', 32, 0);
+
+-- Nolan's Recruits (Invincible Universe - Tier 3) - participant_id 136-139
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(136, 'Conquest', 'Viltrumite', '1200-01-01', 7, 'Viltrum', 'Viltrum Empire', 7),
+(137, 'Thragg', 'Viltrumite', '800-01-01', 7, 'Viltrum', 'Viltrum Empire', 7),
+(138, 'Anissa', 'Viltrumite', '1100-07-15', 7, 'Viltrum', 'Viltrum Empire', 7),
+(139, 'Lucan', 'Viltrumite', '950-03-22', 7, 'Viltrum', 'Viltrum Empire', 7);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(136, 3, '2025-01-15', 'active', 33, 0),
+(137, 3, '2024-05-01', 'active', 33, 0),
+(138, 3, '2025-06-10', 'active', 33, 0),
+(139, 3, '2024-07-05', 'active', 33, 0);
+
+-- Debbie's Recruits (Invincible Universe - Tier 3) - participant_id 140-143
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(140, 'Art', 'Rosebaum', '1945-05-10', 7, 'Earth', 'USA', 7),
+(141, 'Cecil', 'Stedman', '1965-08-19', 7, 'Earth', 'USA', 7),
+(142, 'Donald', 'Ferguson', '1972-03-25', 7, 'Earth', 'USA', 7),
+(143, 'Fiona', 'Mills', '1976-11-08', 7, 'Earth', 'USA', 7);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(140, 3, '2025-01-15', 'active', 34, 0),
+(141, 3, '2024-05-01', 'active', 34, 0),
+(142, 3, '2025-06-10', 'active', 34, 0),
+(143, 3, '2024-07-05', 'active', 34, 0);
+
+-- Atom Eve's Recruits (Invincible Universe - Tier 3) - participant_id 144-147
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(144, 'Robot', 'Rudy', '1998-02-14', 7, 'Earth', 'USA', 7),
+(145, 'Monster Girl', 'Amanda', '1985-09-07', 7, 'Earth', 'USA', 7),
+(146, 'Black Samson', 'Mark', '1980-12-20', 7, 'Earth', 'USA', 7),
+(147, 'Bulletproof', 'Zandale', '1995-06-30', 7, 'Earth', 'USA', 7);
+
+INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
+(144, 3, '2025-01-15', 'active', 35, 0),
+(145, 3, '2024-05-01', 'active', 35, 0),
+(146, 3, '2025-06-10', 'active', 35, 0),
+(147, 3, '2024-07-05', 'active', 35, 0);
+
+-- =====================================================
+-- STEP 7: Insert Employees for Portal Management & Operations
+-- =====================================================
+
+-- Add Vought employees (not members of the pyramid)
+INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
+(148, 'Stan', 'Edgar', '1960-05-12', 6, 'Earth', 'USA', 6),
+(149, 'Sister', 'Sage', '1990-03-15', 6, 'Earth', 'USA', 6),
+(150, 'Ashley', 'Barrett', '1985-11-22', 6, 'Earth', 'USA', 6),
+(151, 'Madelyn', 'Stillwell', '1975-09-08', 6, 'Earth', 'USA', 6),
+(152, 'Victoria', 'Neuman', '1988-04-17', 6, 'Earth', 'USA', 6),
+(153, 'Adam', 'Bourke', '1982-06-25', 6, 'Earth', 'USA', 6),
+(154, 'Seth', 'Reed', '1979-11-14', 6, 'Earth', 'USA', 6),
+(155, 'Robert', 'Singer', '1968-03-22', 6, 'Earth', 'USA', 6),
+(156, 'Alastair', 'Adana', '1985-07-19', 6, 'Earth', 'USA', 6),
+(157, 'Cameron', 'Coleman', '1992-12-05', 6, 'Earth', 'USA', 6),
+(158, 'Grace', 'Mallory', '1955-08-30', 6, 'Earth', 'USA', 6),
+(159, 'Hugh', 'Campbell Sr', '1960-02-18', 6, 'Earth', 'USA', 6),
+(160, 'Jonah', 'Vogelbaum', '1948-10-11', 6, 'Earth', 'USA', 6),
+(161, 'Barbara', 'Vogelbaum', '1952-05-27', 6, 'Earth', 'USA', 6),
+(162, 'Greg', 'Mallory', '1950-01-15', 6, 'Earth', 'USA', 6);
+
+INSERT INTO Employee (participant_id, role, access_level, hire_date, salary, status) VALUES
+(148, 'CEO', 1, '2010-01-01', 5000000.00, 'active'),
+(149, 'Chief Strategist', 1, '2023-06-15', 2500000.00, 'active'),
+(150, 'Multiversal Systems Engineer', 3, '2020-03-10', 180000.00, 'active'),
+(151, 'Senior VP of Hero Management', 2, '2015-07-01', 450000.00, 'active'),
+(152, 'Head of Bureau of Superhuman Affairs', 2, '2022-01-10', 350000.00, 'active'),
+(153, 'Multiversal Systems Engineer', 4, '2021-05-15', 165000.00, 'active'),
+(154, 'Portal Maintenance Engineer', 4, '2019-09-20', 145000.00, 'active'),
+(155, 'Finance Manager', 4, '2018-03-12', 200000.00, 'active'),
+(156, 'Recruitment Manager', 4, '2020-11-08', 120000.00, 'active'),
+(157, 'Communications Director', 5, '2021-08-22', 95000.00, 'active'),
+(158, 'Security Operations Manager', 2, '2012-04-05', 280000.00, 'active'),
+(159, 'HR Administrator', 5, '2017-06-18', 85000.00, 'active'),
+(160, 'Chief Scientist', 1, '2008-02-01', 650000.00, 'active'),
+(161, 'Research Director', 2, '2011-09-14', 420000.00, 'active'),
+(162, 'Operations Director', 2, '2013-12-20', 380000.00, 'active');
+
+-- =====================================================
+-- STEP 8: Insert Portals Between All Universe Combinations
+-- Total: 42 bidirectional portals (7 universes × 6 connections each = 42)
+-- =====================================================
+
+-- Portals from Universe 1 (Friends) to all others
+INSERT INTO Portals (portal_id, source_universe_id, target_universe_id, engineer_id, status, cost) VALUES
+(1, 1, 2, 150, 'active', 50000.00),
+(2, 1, 3, 153, 'active', 50000.00),
+(3, 1, 4, 150, 'active', 50000.00),
+(4, 1, 5, 154, 'active', 50000.00),
+(5, 1, 6, 153, 'active', 50000.00),
+(6, 1, 7, 150, 'active', 50000.00),
+
+-- Portals from Universe 2 (Big Bang Theory) to all others
+(7, 2, 1, 154, 'active', 50000.00),
+(8, 2, 3, 150, 'active', 50000.00),
+(9, 2, 4, 153, 'active', 50000.00),
+(10, 2, 5, 154, 'active', 50000.00),
+(11, 2, 6, 150, 'active', 50000.00),
+(12, 2, 7, 153, 'active', 50000.00),
+
+-- Portals from Universe 3 (Breaking Bad) to all others
+(13, 3, 1, 154, 'active', 50000.00),
+(14, 3, 2, 150, 'active', 50000.00),
+(15, 3, 4, 153, 'active', 50000.00),
+(16, 3, 5, 154, 'active', 50000.00),
+(17, 3, 6, 150, 'active', 50000.00),
+(18, 3, 7, 153, 'active', 50000.00),
+
+-- Portals from Universe 4 (Harry Potter) to all others
+(19, 4, 1, 154, 'active', 50000.00),
+(20, 4, 2, 153, 'active', 50000.00),
+(21, 4, 3, 150, 'active', 50000.00),
+(22, 4, 5, 154, 'active', 50000.00),
+(23, 4, 6, 153, 'active', 50000.00),
+(24, 4, 7, 150, 'active', 50000.00),
+
+-- Portals from Universe 5 (Family Guy) to all others
+(25, 5, 1, 154, 'active', 50000.00),
+(26, 5, 2, 150, 'active', 50000.00),
+(27, 5, 3, 153, 'active', 50000.00),
+(28, 5, 4, 154, 'active', 50000.00),
+(29, 5, 6, 150, 'active', 50000.00),
+(30, 5, 7, 153, 'active', 50000.00),
+
+-- Portals from Universe 6 (Marvel) to all others
+(31, 6, 1, 154, 'active', 50000.00),
+(32, 6, 2, 153, 'active', 50000.00),
+(33, 6, 3, 150, 'active', 50000.00),
+(34, 6, 4, 154, 'active', 50000.00),
+(35, 6, 5, 153, 'active', 50000.00),
+(36, 6, 7, 150, 'active', 50000.00),
+
+-- Portals from Universe 7 (Invincible) to all others
+(37, 7, 1, 154, 'active', 50000.00),
+(38, 7, 2, 150, 'active', 50000.00),
+(39, 7, 3, 153, 'active', 50000.00),
+(40, 7, 4, 154, 'active', 50000.00),
+(41, 7, 5, 150, 'active', 50000.00),
+(42, 7, 6, 153, 'active', 50000.00),
+
+-- Inactive/Under Maintenance Portals
+(43, 1, 6, 153, 'closed', 50000.00),
+(44, 2, 7, 154, 'maintenance', 50000.00),
+(45, 3, 5, 150, 'closed', 50000.00),
+(46, 4, 2, 153, 'maintenance', 50000.00),
+(47, 5, 3, 154, 'closed', 50000.00),
+(48, 6, 4, 150, 'maintenance', 50000.00),
+(49, 7, 4, 153, 'closed', 50000.00);
+
+-- =====================================================
+-- STEP 9: Insert Portal Calibration Records
+-- =====================================================
+
+-- Calibrations for key portals by different engineers
+INSERT INTO PortalCalibration (portal_id, calibration_code, engineer_id, calibration_timestamp) VALUES
+(1, 'CAL-2024-001', 150, '2023-01-10 08:30:00'),
+(1, 'CAL-2024-045', 153, '2025-06-15 14:20:00'),
+(5, 'CAL-2024-002', 150, '2023-01-12 09:15:00'),
+(10, 'CAL-2024-003', 154, '2023-01-15 10:45:00'),
+(15, 'CAL-2024-004', 150, '2023-01-18 11:30:00'),
+(20, 'CAL-2024-005', 153, '2023-02-01 13:00:00'),
+(25, 'CAL-2024-006', 154, '2023-02-05 15:45:00'),
+(30, 'CAL-2024-007', 150, '2023-02-10 09:00:00'),
+(35, 'CAL-2024-008', 153, '2023-02-15 10:30:00'),
+(36, 'CAL-2024-009', 150, '2023-02-20 14:15:00'),
+(40, 'CAL-2024-010', 154, '2024-04-15 08:45:00'),
+(42, 'CAL-2024-011', 153, '2024-05-01 16:20:00'),
+(12, 'CAL-2024-012', 150, '2024-06-10 11:00:00'),
+(18, 'CAL-2024-013', 154, '2024-07-05 13:30:00'),
+(22, 'CAL-2024-014', 153, '2024-08-01 09:45:00');
+
+-- =====================================================
+-- STEP 10: Insert Recruitment Events
+-- =====================================================
+
+-- Recruitment events for all Tier 2 members (recruited by Tier 1)
+INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recruitment_method) VALUES
+(1, 8, '2023-03-01', 'personal'),
+(1, 9, '2023-03-05', 'personal'),
+(1, 10, '2023-03-10', 'referral'),
+(1, 11, '2023-03-15', 'personal'),
+(2, 12, '2023-03-01', 'personal'),
+(2, 13, '2023-03-05', 'referral'),
+(2, 14, '2023-03-10', 'personal'),
+(2, 15, '2023-03-15', 'personal'),
+(3, 16, '2023-03-01', 'personal'),
+(3, 17, '2023-03-05', 'personal'),
+(3, 18, '2023-03-10', 'referral'),
+(3, 19, '2023-03-15', 'personal'),
+(4, 20, '2023-03-01', 'personal'),
+(4, 21, '2023-03-05', 'personal'),
+(4, 22, '2023-03-10', 'referral'),
+(4, 23, '2023-03-15', 'marketing'),
+(5, 24, '2023-03-01', 'personal'),
+(5, 25, '2023-03-05', 'personal'),
+(5, 26, '2023-03-10', 'referral'),
+(5, 27, '2023-03-15', 'personal'),
+(6, 28, '2023-03-01', 'portal'),
+(6, 29, '2023-03-05', 'personal'),
+(6, 30, '2023-03-10', 'personal'),
+(6, 31, '2023-03-15', 'portal'),
+(7, 32, '2023-03-01', 'personal'),
+(7, 33, '2023-03-05', 'portal'),
+(7, 34, '2023-03-10', 'personal'),
+(7, 35, '2023-03-15', 'personal');
+
+-- Recruitment events for all Tier 3 members (recruited by Tier 2)
+INSERT INTO RecruitmentEvent (recruiter_id, recruit_id, recruitment_date, recruitment_method) VALUES
+(8, 36, '2025-01-15', 'personal'),
+(8, 37, '2024-05-01', 'referral'),
+(8, 38, '2025-06-10', 'personal'),
+(8, 39, '2024-07-05', 'personal'),
+(9, 40, '2025-01-15', 'personal'),
+(9, 41, '2024-05-01', 'referral'),
+(9, 42, '2025-06-10', 'personal'),
+(9, 43, '2024-07-05', 'marketing'),
+(10, 44, '2025-01-15', 'personal'),
+(10, 45, '2024-05-01', 'personal'),
+(10, 46, '2025-06-10', 'referral'),
+(10, 47, '2024-07-05', 'personal'),
+(11, 48, '2025-01-15', 'personal'),
+(11, 49, '2024-05-01', 'personal'),
+(11, 50, '2025-06-10', 'referral'),
+(11, 51, '2024-07-05', 'personal'),
+(12, 52, '2025-01-15', 'personal'),
+(12, 53, '2024-05-01', 'marketing'),
+(12, 54, '2025-06-10', 'personal'),
+(12, 55, '2024-07-05', 'referral'),
+(13, 56, '2025-01-15', 'personal'),
+(13, 57, '2024-05-01', 'portal'),
+(13, 58, '2025-06-10', 'personal'),
+(13, 59, '2024-07-05', 'referral'),
+(14, 60, '2025-01-15', 'personal'),
+(14, 61, '2024-05-01', 'personal'),
+(14, 62, '2025-06-10', 'referral'),
+(14, 63, '2024-07-05', 'portal'),
+(15, 64, '2025-01-15', 'personal'),
+(15, 65, '2024-05-01', 'personal'),
+(15, 66, '2025-06-10', 'referral'),
+(15, 67, '2024-07-05', 'personal'),
+(16, 68, '2025-01-15', 'personal'),
+(16, 69, '2024-05-01', 'personal'),
+(16, 70, '2025-06-10', 'referral'),
+(16, 71, '2024-07-05', 'personal'),
+(17, 72, '2025-01-15', 'personal'),
+(17, 73, '2024-05-01', 'personal'),
+(17, 74, '2025-06-10', 'personal'),
+(17, 75, '2024-07-05', 'referral'),
+(18, 76, '2025-01-15', 'personal'),
+(18, 77, '2024-05-01', 'referral'),
+(18, 78, '2025-06-10', 'marketing'),
+(18, 79, '2024-07-05', 'personal'),
+(19, 80, '2025-01-15', 'personal'),
+(19, 81, '2024-05-01', 'personal'),
+(19, 82, '2025-06-10', 'referral'),
+(19, 83, '2024-07-05', 'portal'),
+(20, 84, '2025-01-15', 'personal'),
+(20, 85, '2024-05-01', 'referral'),
+(20, 86, '2025-06-10', 'personal'),
+(20, 87, '2024-07-05', 'marketing'),
+(21, 88, '2025-01-15', 'portal'),
+(21, 89, '2024-05-01', 'personal'),
+(21, 90, '2025-06-10', 'referral'),
+(21, 91, '2024-07-05', 'personal'),
+(22, 92, '2025-01-15', 'personal'),
+(22, 93, '2024-05-01', 'personal'),
+(22, 94, '2025-06-10', 'referral'),
+(22, 95, '2024-07-05', 'personal'),
+(23, 96, '2025-01-15', 'personal'),
+(23, 97, '2024-05-01', 'marketing'),
+(23, 98, '2025-06-10', 'personal'),
+(23, 99, '2024-07-05', 'referral'),
+(24, 100, '2025-01-15', 'personal'),
+(24, 101, '2024-05-01', 'personal'),
+(24, 102, '2025-06-10', 'personal'),
+(24, 103, '2024-07-05', 'referral'),
+(25, 104, '2025-01-15', 'personal'),
+(25, 105, '2024-05-01', 'referral'),
+(25, 106, '2025-06-10', 'personal'),
+(25, 107, '2024-07-05', 'personal'),
+(26, 108, '2025-01-15', 'personal'),
+(26, 109, '2024-05-01', 'personal'),
+(26, 110, '2025-06-10', 'referral'),
+(26, 111, '2024-07-05', 'personal'),
+(27, 112, '2025-01-15', 'personal'),
+(27, 113, '2024-05-01', 'referral'),
+(27, 114, '2025-06-10', 'personal'),
+(27, 115, '2024-07-05', 'personal'),
+(28, 116, '2025-01-15', 'portal'),
+(28, 117, '2024-05-01', 'portal'),
+(28, 118, '2025-06-10', 'personal'),
+(28, 119, '2024-07-05', 'personal'),
+(29, 120, '2025-01-15', 'personal'),
+(29, 121, '2024-05-01', 'personal'),
+(29, 122, '2025-06-10', 'referral'),
+(29, 123, '2024-07-05', 'personal'),
+(30, 124, '2025-01-15', 'personal'),
+(30, 125, '2024-05-01', 'personal'),
+(30, 126, '2025-06-10', 'portal'),
+(30, 127, '2024-07-05', 'referral'),
+(31, 128, '2025-01-15', 'personal'),
+(31, 129, '2024-05-01', 'portal'),
+(31, 130, '2025-06-10', 'portal'),
+(31, 131, '2024-07-05', 'personal'),
+(32, 132, '2025-01-15', 'personal'),
+(32, 133, '2024-05-01', 'referral'),
+(32, 134, '2025-06-10', 'personal'),
+(32, 135, '2024-07-05', 'personal'),
+(33, 136, '2025-01-15', 'portal'),
+(33, 137, '2024-05-01', 'portal'),
+(33, 138, '2025-06-10', 'portal'),
+(33, 139, '2024-07-05', 'personal'),
+(34, 140, '2025-01-15', 'personal'),
+(34, 141, '2024-05-01', 'referral'),
+(34, 142, '2025-06-10', 'personal'),
+(34, 143, '2024-07-05', 'personal'),
+(35, 144, '2025-01-15', 'personal'),
+(35, 145, '2024-05-01', 'personal'),
+(35, 146, '2025-06-10', 'referral'),
+(35, 147, '2024-07-05', 'personal');
+
+-- =====================================================
+-- STEP 11: Insert Transactions
+-- =====================================================
+
+-- Initial investment transactions from Tier 1 members
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(1, 1, NULL, 'investment', 100000.00, '2023-01-15', 'completed'),
+(2, 2, NULL, 'investment', 100000.00, '2023-01-15', 'completed'),
+(3, 3, NULL, 'investment', 100000.00, '2023-01-15', 'completed'),
+(4, 4, NULL, 'investment', 100000.00, '2023-01-15', 'completed'),
+(5, 5, NULL, 'investment', 100000.00, '2023-01-15', 'completed'),
+(6, 6, NULL, 'investment', 100000.00, '2023-01-15', 'completed'),
+(7, 7, NULL, 'investment', 100000.00, '2023-01-15', 'completed');
+
+-- Investment transactions from Tier 2 members
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(8, 8, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(9, 9, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(10, 10, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(11, 11, NULL, 'investment', 50000.00, '2023-03-15', 'completed'),
+(12, 12, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(13, 13, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(14, 14, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(15, 15, NULL, 'investment', 50000.00, '2023-03-15', 'completed'),
+(16, 16, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(17, 17, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(18, 18, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(19, 19, NULL, 'investment', 50000.00, '2023-03-15', 'completed'),
+(20, 20, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(21, 21, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(22, 22, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(23, 23, NULL, 'investment', 50000.00, '2023-03-15', 'completed'),
+(24, 24, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(25, 25, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(26, 26, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(27, 27, NULL, 'investment', 50000.00, '2023-03-15', 'completed'),
+(28, 28, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(29, 29, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(30, 30, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(31, 31, NULL, 'investment', 50000.00, '2023-03-15', 'completed'),
+(32, 32, NULL, 'investment', 50000.00, '2023-03-01', 'completed'),
+(33, 33, NULL, 'investment', 50000.00, '2023-03-05', 'completed'),
+(34, 34, NULL, 'investment', 50000.00, '2023-03-10', 'completed'),
+(35, 35, NULL, 'investment', 50000.00, '2023-03-15', 'completed');
+
+-- Commission payments from Tier 2 to Tier 1 recruiters
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(36, NULL, 1, 'commission', 10000.00, '2023-03-20', 'completed'),
+(37, NULL, 2, 'commission', 10000.00, '2023-03-20', 'completed'),
+(38, NULL, 3, 'commission', 10000.00, '2023-03-20', 'completed'),
+(39, NULL, 4, 'commission', 10000.00, '2023-03-20', 'completed'),
+(40, NULL, 5, 'commission', 10000.00, '2023-03-20', 'completed'),
+(41, NULL, 6, 'commission', 10000.00, '2023-03-20', 'completed'),
+(42, NULL, 7, 'commission', 10000.00, '2023-03-20', 'completed');
+
+-- Sample investment transactions from Tier 3 members
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(43, 36, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(44, 40, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(45, 44, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(46, 48, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(47, 52, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(48, 56, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(49, 60, NULL, 'investment', 25000.00, '2025-01-15', 'completed'),
+(50, 64, NULL, 'investment', 25000.00, '2025-01-15', 'completed');
+
+-- Commission payments from Tier 3 to Tier 2 recruiters
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(51, NULL, 8, 'commission', 3750.00, '2024-09-10', 'completed'),
+(52, NULL, 9, 'commission', 3750.00, '2024-09-10', 'completed'),
+(53, NULL, 10, 'commission', 3750.00, '2024-09-10', 'completed'),
+(54, NULL, 12, 'commission', 3750.00, '2024-09-10', 'completed'),
+(55, NULL, 16, 'commission', 3750.00, '2024-09-10', 'completed'),
+(56, NULL, 20, 'commission', 3750.00, '2024-09-10', 'completed');
+
+-- Bonus transactions for top performers
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(57, NULL, 1, 'bonus', 5000.00, '2025-01-01', 'completed'),
+(58, NULL, 6, 'bonus', 5000.00, '2025-01-01', 'completed'),
+(59, NULL, 4, 'bonus', 3500.00, '2025-01-01', 'completed'),
+(60, NULL, 8, 'bonus', 2000.00, '2025-01-05', 'completed'),
+(61, NULL, 12, 'bonus', 2000.00, '2025-01-05', 'completed');
+
+-- Some pending transactions
+INSERT INTO Transaction (transaction_id, from_member_id, to_member_id, transaction_type, amount, transaction_date, status) VALUES
+(62, 68, NULL, 'investment', 25000.00, '2025-10-10', 'pending'),
+(63, 72, NULL, 'investment', 25000.00, '2025-10-12', 'pending'),
+(64, NULL, 16, 'commission', 2500.00, '2025-10-15', 'pending');
+
+-- =====================================================
+-- STEP 12: Insert Marketing Campaigns
+-- =====================================================
+
+INSERT INTO MarketingCampaign (program_id, program_code) VALUES
+(1, 'MULTIV-2024-Q1'),
+(2, 'HEROES-2024-Q1'),
+(3, 'COSMIC-2024-Q2'),
+(4, 'WIZARD-2024-Q1'),
+(5, 'FAMILY-2024-Q2'),
+(6, 'SCIENCE-2024-Q1'),
+(7, 'SUPER-2024-Q2');
+
+INSERT INTO MarketingCampaignAdditional (program_code, universe_id, name, budget, start_date, end_date, status) VALUES
+('MULTIV-2024-Q1', 1, 'Friends Forever Investment Drive', 75000.00, '2023-01-01', '2023-03-31', 'completed'),
+('HEROES-2024-Q1', 6, 'Avengers Assemble Wealth Campaign', 150000.00, '2023-01-15', '2023-04-15', 'completed'),
+('COSMIC-2024-Q2', 6, 'Asgardian Prosperity Initiative', 120000.00, '2024-04-01', '2024-06-30', 'completed'),
+('WIZARD-2024-Q1', 4, 'Magical Investment Opportunities', 90000.00, '2024-02-01', '2024-04-30', 'completed'),
+('FAMILY-2024-Q2', 5, 'Quahog Financial Freedom', 60000.00, '2024-04-01', '2024-06-30', 'completed'),
+('SCIENCE-2024-Q1', 2, 'Big Brain Big Returns', 80000.00, '2024-01-20', '2024-04-20', 'completed'),
+('SUPER-2024-Q2', 7, 'Invincible Investment Strategy', 100000.00, '2025-04-15', '2025-07-15', 'active');
+
+-- Members involved in marketing campaigns
+INSERT INTO MarketingCampaign_MembersInvolved (program_id, members_involved) VALUES
+(1, 1), (1, 8), (1, 9), (1, 11),
+(2, 6), (2, 28), (2, 29), (2, 30), (2, 31),
+(3, 6), (3, 28), (3, 116), (3, 119),
+(4, 4), (4, 20), (4, 21), (4, 23),
+(5, 5), (5, 24), (5, 25),
+(6, 2), (6, 12), (6, 13), (6, 53),
+(7, 7), (7, 32), (7, 35), (7, 134);
+
+-- =====================================================
+-- DATA POPULATION COMPLETE
+-- =====================================================
+
+SELECT 'Database population completed successfully!' AS Status;
+SELECT COUNT(*) AS Total_Universes FROM Universe;
+SELECT COUNT(*) AS Total_Participants FROM Participant;
+SELECT COUNT(*) AS Total_Members FROM Member;
+SELECT COUNT(*) AS Total_Employees FROM Employee;
+SELECT COUNT(*) AS Total_Portals FROM Portals;
+SELECT tier_level, COUNT(*) AS member_count FROM Member GROUP BY tier_level ORDER BY tier_level;
+
