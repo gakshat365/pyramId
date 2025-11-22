@@ -382,6 +382,9 @@ class VoughtDatabaseGUI:
         self.root.state('zoomed')  # Start maximized
         self.root.configure(bg='#f0f0f0')
         
+        # User role - will be set by login
+        self.user_role = None  # 'administrator', 'technician', 'member'
+        
         # Theme system
         self.is_dark_mode = True
         self.themes = {
@@ -429,7 +432,166 @@ class VoughtDatabaseGUI:
             self.root.destroy()
             return
         
-        self.create_widgets()
+        # Show role selection dialog
+        self.show_role_selection()
+    
+    def show_role_selection(self):
+        """Show role selection dialog at startup"""
+        theme = self.get_theme()
+        
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Select User Role")
+        dialog.configure(bg=theme['dialog_bg'])
+        
+        # Set size first
+        dialog_width = 400
+        dialog_height = 450
+        
+        # Get screen dimensions
+        screen_width = dialog.winfo_screenwidth()
+        screen_height = dialog.winfo_screenheight()
+        
+        # Calculate center position
+        x = (screen_width // 2) - (dialog_width // 2)
+        y = (screen_height // 2) - (dialog_height // 2)
+        
+        # Set geometry with size and position
+        dialog.geometry(f'{dialog_width}x{dialog_height}+{x}+{y}')
+        
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Prevent closing without selection
+        dialog.protocol("WM_DELETE_WINDOW", lambda: None)
+        
+        # Header
+        header = tk.Frame(dialog, bg=theme['sidebar_bg'])
+        header.pack(fill='x', pady=(0, 30))
+        
+        tk.Label(
+            header,
+            text="Select Your Role",
+            font=('Segoe UI', 18, 'bold'),
+            bg=theme['sidebar_bg'],
+            fg=theme['fg']
+        ).pack(pady=20)
+        
+        # Role buttons
+        roles_frame = tk.Frame(dialog, bg=theme['dialog_bg'])
+        roles_frame.pack(pady=20, padx=40, fill='both', expand=True)
+        
+        def select_role(role):
+            self.user_role = role
+            dialog.destroy()
+            self.create_widgets()
+        
+        # Administrator button
+        admin_btn = tk.Button(
+            roles_frame,
+            text="Administrator",
+            command=lambda: select_role('administrator'),
+            bg='#dc2626',
+            fg='#ffffff',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            pady=15
+        )
+        admin_btn.pack(fill='x', pady=10)
+        
+        tk.Label(
+            roles_frame,
+            text="Full access to all queries and database operations",
+            font=('Segoe UI', 9),
+            bg=theme['dialog_bg'],
+            fg=theme['muted']
+        ).pack(pady=(0, 15))
+        
+        # Technician button
+        tech_btn = tk.Button(
+            roles_frame,
+            text="Technical Staff",
+            command=lambda: select_role('technician'),
+            bg='#2563eb',
+            fg='#ffffff',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            pady=15
+        )
+        tech_btn.pack(fill='x', pady=10)
+        
+        tk.Label(
+            roles_frame,
+            text="Access to portal and transaction queries",
+            font=('Segoe UI', 9),
+            bg=theme['dialog_bg'],
+            fg=theme['muted']
+        ).pack(pady=(0, 15))
+        
+        # Member button
+        member_btn = tk.Button(
+            roles_frame,
+            text="Member",
+            command=lambda: select_role('member'),
+            bg='#16a34a',
+            fg='#ffffff',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            pady=15
+        )
+        member_btn.pack(fill='x', pady=10)
+        
+        tk.Label(
+            roles_frame,
+            text="View-only access to member-relevant queries",
+            font=('Segoe UI', 9),
+            bg=theme['dialog_bg'],
+            fg=theme['muted']
+        ).pack(pady=(0, 15))
+        
+        self.root.wait_window(dialog)
+    
+    def filter_queries_by_role(self):
+        """Filter queries based on user role"""
+        if self.user_role == 'administrator':
+            return QUERIES
+        
+        elif self.user_role == 'technician':
+            # Technician: Portal and Transaction queries only
+            filtered = {}
+            
+            # Add View Tables category with portal and transaction queries
+            filtered["Retrieval - View Tables"] = {
+                "View All Transactions": QUERIES["Retrieval - View Tables"]["View All Transactions"]
+            }
+            
+            # Add Analysis Reports
+            filtered["Analysis Reports"] = {
+                "Transaction Value per Finance Manager": QUERIES["Analysis Reports"]["Transaction Value per Finance Manager"]
+            }
+            
+            return filtered
+        
+        elif self.user_role == 'member':
+            # Member: View-only relevant queries (no tier information)
+            filtered = {}
+            
+            # Projection queries
+            filtered["Retrieval - Projection"] = QUERIES["Retrieval - Projection"]
+            
+            # Search queries
+            filtered["Retrieval - Search"] = QUERIES["Retrieval - Search"]
+            
+            # View recruitment events only
+            filtered["Retrieval - View Tables"] = {
+                "View All Recruitment Events": QUERIES["Retrieval - View Tables"]["View All Recruitment Events"]
+            }
+            
+            return filtered
+        
+        return QUERIES
     
     def create_widgets(self):
         theme = self.get_theme()
@@ -443,6 +605,21 @@ class VoughtDatabaseGUI:
         title_container = tk.Frame(self.header_frame, bg=theme['header_bg'])
         title_container.pack(side='left', fill='both', expand=True)
         
+        # Role indicator
+        role_display = {
+            'administrator': '👑 Administrator',
+            'technician': '🔧 Technical Staff',
+            'member': '👤 Member'
+        }
+        
+        tk.Label(
+            title_container,
+            text=role_display.get(self.user_role, ''),
+            font=('Segoe UI', 10),
+            bg=theme['header_bg'],
+            fg='#94a3b8'
+        ).pack(pady=(10, 0), anchor='w', padx=20)
+        
         self.title_label = tk.Label(
             title_container,
             text="Vought International",
@@ -450,7 +627,7 @@ class VoughtDatabaseGUI:
             bg=theme['header_bg'],
             fg='#ffffff'
         )
-        self.title_label.pack(pady=(15, 2))
+        self.title_label.pack(pady=(5, 2), padx=20)
         
         self.subtitle_label = tk.Label(
             title_container,
@@ -477,21 +654,22 @@ class VoughtDatabaseGUI:
         )
         self.theme_btn.pack(side='right', padx=20)
         
-        # Start/Reset button
-        self.reset_btn = tk.Button(
-            self.header_frame,
-            text="Start/Reset",
-            command=self.reset_database,
-            bg='#dc2626' if self.is_dark_mode else '#b91c1c',
-            fg='#ffffff',
-            font=('Segoe UI', 11, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            borderwidth=0,
-            padx=15,
-            pady=8
-        )
-        self.reset_btn.pack(side='right', padx=10)
+        # Start/Reset button (Administrator only)
+        if self.user_role == 'administrator':
+            self.reset_btn = tk.Button(
+                self.header_frame,
+                text="Start/Reset",
+                command=self.reset_database,
+                bg='#dc2626' if self.is_dark_mode else '#b91c1c',
+                fg='#ffffff',
+                font=('Segoe UI', 11, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                borderwidth=0,
+                padx=15,
+                pady=8
+            )
+            self.reset_btn.pack(side='right', padx=10)
         
         # Main container
         self.main_container = tk.Frame(self.root, bg=theme['bg'])
@@ -533,8 +711,11 @@ class VoughtDatabaseGUI:
         # Store category frames for collapse/expand
         self.category_frames = {}
         
+        # Get filtered queries based on role
+        queries_to_display = self.filter_queries_by_role()
+        
         # Add query buttons with collapsible categories
-        for category, queries in QUERIES.items():
+        for category, queries in queries_to_display.items():
             # Category header (clickable)
             cat_frame = tk.Frame(self.scrollable_frame, bg=theme['sidebar_bg'])
             cat_frame.pack(fill='x', pady=(0, 2))
@@ -722,10 +903,11 @@ class VoughtDatabaseGUI:
             fg='#ffffff' if self.is_dark_mode else '#2c2416'
         )
         
-        # Update reset button
-        self.reset_btn.configure(
-            bg='#dc2626' if self.is_dark_mode else '#b91c1c'
-        )
+        # Update reset button (if exists - administrator only)
+        if hasattr(self, 'reset_btn'):
+            self.reset_btn.configure(
+                bg='#dc2626' if self.is_dark_mode else '#b91c1c'
+            )
         
         # Update main container
         self.main_container.configure(bg=theme['bg'])
