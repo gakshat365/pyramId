@@ -1,4 +1,4 @@
-# VoughDB - Database Management System
+# VoughtDB - Database Management System
 
 A GUI-based database management application for Vought International's pyramid scheme system, built with Python and MySQL.
 
@@ -46,7 +46,7 @@ pip install -r requirements.txt
 2. **Initialize Database**:
    - Run the app and click **Start/Reset** button, or
    - Manually execute:
-     - `src/schema.sql` - Creates VoughDB database and 12 tables
+     - `src/schema.sql` - Creates VoughtDB database and 12 tables
      - `src/populate.sql` - Loads sample data (147 members across 7 universes)
 
 3. **Run Application** (`src/main_app.py`):

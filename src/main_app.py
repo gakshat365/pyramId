@@ -15,8 +15,28 @@ except ImportError:
 # ==============================================================================
 # DATABASE CONNECTIVITY
 # ==============================================================================
+def ensure_database_exists():
+    """Create VoughtDB database if it doesn't exist"""
+    config = {
+        'host': db_config.DB_HOST,
+        'user': db_config.DB_USER,
+        'password': db_config.DB_PASSWORD
+    }
+    
+    try:
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+        cursor.execute("CREATE DATABASE IF NOT EXISTS VoughtDB")
+        cursor.execute("USE VoughtDB")
+        cursor.close()
+        conn.close()
+        return True
+    except Error as e:
+        print(f"Error creating database: {e}")
+        return False
+
 def get_db_connection():
-    """Establishes a secure connection to the VoughDB"""
+    """Establishes a secure connection to the VoughtDB"""
     config = {
         'host': db_config.DB_HOST,
         'user': db_config.DB_USER,
@@ -363,6 +383,24 @@ QUERIES = {
         """
     },
     
+    "Modification - Update": {
+        "Update Member Status": """
+            UPDATE Member 
+            SET status = %s 
+            WHERE participant_id = %s;
+        """,
+        "Update Portal Status": """
+            UPDATE Portals 
+            SET status = %s 
+            WHERE portal_id = %s;
+        """,
+        "Update Transaction Status": """
+            UPDATE Transaction 
+            SET status = %s 
+            WHERE transaction_id = %s;
+        """
+    },
+    
     "Modification - Delete": {
         "Delete Member": """
             DELETE FROM Member 
@@ -425,6 +463,9 @@ class VoughtDatabaseGUI:
                 'dialog_bg': '#f5f1eb'
             }
         }
+        
+        # Ensure database exists before testing connection
+        ensure_database_exists()
         
         # Test connection
         if not get_db_connection():
@@ -570,6 +611,11 @@ class VoughtDatabaseGUI:
             # Add Analysis Reports
             filtered["Analysis Reports"] = {
                 "Transaction Value per Finance Manager": QUERIES["Analysis Reports"]["Transaction Value per Finance Manager"]
+            }
+            
+            # Add Update Portal Status
+            filtered["Modification - Update"] = {
+                "Update Portal Status": QUERIES["Modification - Update"]["Update Portal Status"]
             }
             
             return filtered
@@ -959,7 +1005,7 @@ class VoughtDatabaseGUI:
         # Confirm with user
         confirm = messagebox.askyesno(
             "Reset Database",
-            "This will DROP and recreate the VoughDB database. All existing data will be lost! Do you want to continue?"
+            "This will DROP and recreate the VoughtDB database. All existing data will be lost! Do you want to continue?"
         )
         
         if not confirm:
@@ -976,7 +1022,7 @@ class VoughtDatabaseGUI:
             messagebox.showerror("Schema Error", message)
             return
         
-        # Execute populate.sql (loads data into VoughDB)
+        # Execute populate.sql (loads data into VoughtDB)
         success, message = execute_sql_file(populate_path)
         if not success:
             messagebox.showerror("Populate Error", message)
@@ -1177,6 +1223,11 @@ class VoughtDatabaseGUI:
             # Modification - Insert
             "Insert New Member": ["Participant ID", "Tier Level (1-7)", "Recruiter ID (0 or NULL if none)"],
             "Record Recruitment Event": ["Recruit ID (New Member)", "Recruiter ID (0 or NULL if none)", "Recruitment Method"],
+            
+            # Modification - Update
+            "Update Member Status": ["New Status (active/suspended/terminated)", "Member Participant ID"],
+            "Update Portal Status": ["New Status (active/maintenance/closed)", "Portal ID"],
+            "Update Transaction Status": ["New Status (pending/completed/failed)", "Transaction ID"],
             
             # Modification - Delete
             "Delete Member": ["Member Participant ID to Delete"]

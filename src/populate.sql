@@ -1,4 +1,4 @@
-USE VoughDB;
+USE VoughtDB;
 
 -- Disable foreign key checks temporarily for easier insertion
 SET FOREIGN_KEY_CHECKS = 0;

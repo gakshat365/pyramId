@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS VoughDB;
-CREATE DATABASE VoughDB;
-USE VoughDB;
+DROP DATABASE IF EXISTS VoughtDB;
+CREATE DATABASE VoughtDB;
+USE VoughtDB;
 
 
 -- Core dimension tables (no dependencies)
