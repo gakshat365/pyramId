@@ -53,49 +53,49 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (1, 'Joey', 'Tribbiani', '1968-01-09', 1, 'Earth', 'USA', 1);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(1, 1, '2023-01-15', 'active', NULL, 4);
+(1, 1, '2023-01-10', 'active', NULL, 4);
 
 -- Universe 2: Big Bang Theory - Rajesh Koothrappali
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
 (2, 'Rajesh', 'Koothrappali', '1981-10-06', 2, 'Earth', 'India', 2);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(2, 1, '2023-01-15', 'active', NULL, 4);
+(2, 1, '2023-01-12', 'active', NULL, 4);
 
 -- Universe 3: Breaking Bad - Hank Schrader
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
 (3, 'Hank', 'Schrader', '1966-03-17', 3, 'Earth', 'USA', 3);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(3, 1, '2023-01-15', 'active', NULL, 4);
+(3, 1, '2023-01-14', 'active', NULL, 4);
 
 -- Universe 4: Harry Potter - Neville Longbottom
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
 (4, 'Neville', 'Longbottom', '1980-07-30', 4, 'Earth', 'United Kingdom', 4);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(4, 1, '2023-01-15', 'active', NULL, 4);
+(4, 1, '2023-01-17', 'active', NULL, 4);
 
 -- Universe 5: Family Guy - Peter Griffin
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
 (5, 'Peter', 'Griffin', '1966-09-15', 5, 'Earth', 'USA', 5);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(5, 1, '2023-01-15', 'active', NULL, 4);
+(5, 1, '2023-01-20', 'active', NULL, 4);
 
 -- Universe 6: Marvel - Thor
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
 (6, 'Thor', 'Odinson', '964-01-01', 6, 'Asgard', 'Asgard', 6);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(6, 1, '2023-01-15', 'active', NULL, 4);
+(6, 1, '2023-01-23', 'active', NULL, 4);
 
 -- Universe 7: Invincible - Immortal
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
 (7, 'Abraham', 'Lincoln', '1809-02-12', 7, 'Earth', 'USA', 7);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(7, 1, '2023-01-15', 'active', NULL, 4);
+(7, 1, '2023-01-26', 'active', NULL, 4);
 
 -- =====================================================
 -- STEP 4: Update Universe table with first_member_id
@@ -120,9 +120,9 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (11, 'Phoebe', 'Buffay', '1968-02-16', 1, 'Earth', 'USA', 1);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(8, 2, '2023-03-01', 'active', 1, 4),
-(9, 2, '2023-03-05', 'active', 1, 4),
-(10, 2, '2023-03-10', 'active', 1, 4),
+(8, 2, '2023-02-05', 'active', 1, 4),
+(9, 2, '2023-02-18', 'active', 1, 4),
+(10, 2, '2023-03-02', 'active', 1, 4),
 (11, 2, '2023-03-15', 'active', 1, 4);
 
 -- Rajesh's Recruits (Big Bang Theory Universe) - 4 members
@@ -133,10 +133,10 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (15, 'Bernadette', 'Rostenkowski', '1984-12-12', 2, 'Earth', 'USA', 2);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(12, 2, '2023-03-01', 'active', 2, 4),
-(13, 2, '2023-03-05', 'active', 2, 4),
-(14, 2, '2023-03-10', 'active', 2, 4),
-(15, 2, '2023-03-15', 'active', 2, 4);
+(12, 2, '2023-02-07', 'active', 2, 4),
+(13, 2, '2023-02-20', 'active', 2, 4),
+(14, 2, '2023-03-05', 'active', 2, 4),
+(15, 2, '2023-03-18', 'active', 2, 4);
 
 -- Hank's Recruits (Breaking Bad Universe) - 4 members
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
@@ -146,10 +146,10 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (19, 'Saul', 'Goodman', '1960-11-12', 3, 'Earth', 'USA', 3);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(16, 2, '2023-03-01', 'active', 3, 4),
-(17, 2, '2023-03-05', 'active', 3, 4),
-(18, 2, '2023-03-10', 'active', 3, 4),
-(19, 2, '2023-03-15', 'active', 3, 4);
+(16, 2, '2023-02-10', 'active', 3, 4),
+(17, 2, '2023-02-23', 'active', 3, 4),
+(18, 2, '2023-03-08', 'active', 3, 4),
+(19, 2, '2023-03-21', 'active', 3, 4);
 
 -- Neville's Recruits (Harry Potter Universe) - 4 members
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
@@ -159,10 +159,10 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (23, 'Luna', 'Lovegood', '1981-02-13', 4, 'Earth', 'United Kingdom', 4);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(20, 2, '2023-03-01', 'active', 4, 4),
-(21, 2, '2023-03-05', 'active', 4, 4),
+(20, 2, '2023-02-12', 'active', 4, 4),
+(21, 2, '2023-02-25', 'active', 4, 4),
 (22, 2, '2023-03-10', 'active', 4, 4),
-(23, 2, '2023-03-15', 'active', 4, 4);
+(23, 2, '2023-03-24', 'active', 4, 4);
 
 -- Peter's Recruits (Family Guy Universe) - 4 members
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
@@ -172,10 +172,10 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (27, 'Joe', 'Swanson', '1963-11-17', 5, 'Earth', 'USA', 5);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(24, 2, '2023-03-01', 'active', 5, 4),
-(25, 2, '2023-03-05', 'active', 5, 4),
-(26, 2, '2023-03-10', 'active', 5, 4),
-(27, 2, '2023-03-15', 'active', 5, 4);
+(24, 2, '2023-02-14', 'active', 5, 4),
+(25, 2, '2023-02-27', 'active', 5, 4),
+(26, 2, '2023-03-12', 'active', 5, 4),
+(27, 2, '2023-03-26', 'active', 5, 4);
 
 -- Thor's Recruits (Marvel Universe) - 4 members
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
@@ -185,10 +185,10 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (31, 'Natasha', 'Romanoff', '1984-11-22', 6, 'Earth', 'Russia', 6);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(28, 2, '2023-03-01', 'active', 6, 4),
-(29, 2, '2023-03-05', 'active', 6, 4),
-(30, 2, '2023-03-10', 'active', 6, 4),
-(31, 2, '2023-03-15', 'active', 6, 4);
+(28, 2, '2023-02-16', 'active', 6, 4),
+(29, 2, '2023-03-01', 'active', 6, 4),
+(30, 2, '2023-03-14', 'active', 6, 4),
+(31, 2, '2023-03-28', 'active', 6, 4);
 
 -- Immortal's Recruits (Invincible Universe) - 4 members
 INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, universe_id, planet, country, city_id) VALUES
@@ -198,10 +198,10 @@ INSERT INTO Participant (participant_id, first_name, last_name, date_of_birth, u
 (35, 'Atom', 'Eve', '2001-07-29', 7, 'Earth', 'USA', 7);
 
 INSERT INTO Member (participant_id, tier_level, join_date, status, recruiter_id, total_recruits) VALUES
-(32, 2, '2023-03-01', 'active', 7, 4),
-(33, 2, '2023-03-05', 'active', 7, 4),
-(34, 2, '2023-03-10', 'active', 7, 4),
-(35, 2, '2023-03-15', 'active', 7, 4);
+(32, 2, '2023-02-17', 'active', 7, 4),
+(33, 2, '2023-03-03', 'active', 7, 4),
+(34, 2, '2023-03-16', 'active', 7, 4),
+(35, 2, '2023-03-30', 'active', 7, 4);
 
 -- =====================================================
 -- STEP 6: Insert Tier 3 Members (112 Members - 4 per Tier 2 Member)
@@ -977,12 +977,4 @@ INSERT INTO MarketingCampaign_MembersInvolved (program_id, members_involved) VAL
 -- =====================================================
 -- DATA POPULATION COMPLETE
 -- =====================================================
-
-SELECT 'Database population completed successfully!' AS Status;
-SELECT COUNT(*) AS Total_Universes FROM Universe;
-SELECT COUNT(*) AS Total_Participants FROM Participant;
-SELECT COUNT(*) AS Total_Members FROM Member;
-SELECT COUNT(*) AS Total_Employees FROM Employee;
-SELECT COUNT(*) AS Total_Portals FROM Portals;
-SELECT tier_level, COUNT(*) AS member_count FROM Member GROUP BY tier_level ORDER BY tier_level;
 

@@ -3,6 +3,7 @@ from mysql.connector import Error
 import tkinter as tk
 from tkinter import ttk, messagebox
 import sys
+import os
 
 # IMPORT CONFIGURATION
 try:
@@ -74,389 +75,298 @@ def execute_update(sql, params=None):
         cursor.close()
         conn.close()
 
+def execute_sql_file(file_path):
+    """Execute all SQL statements from a file"""
+    if not os.path.exists(file_path):
+        return False, f"File not found: {file_path}"
+    
+    config = {
+        'host': db_config.DB_HOST,
+        'user': db_config.DB_USER,
+        'password': db_config.DB_PASSWORD,
+    }
+    
+    conn = None
+    cursor = None
+    
+    try:
+        # Connect without specifying database for schema.sql
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+        
+        # Read and execute the SQL file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            sql_content = f.read()
+        
+        # Split by semicolons and execute each statement
+        statements = [s.strip() for s in sql_content.split(';') if s.strip()]
+        
+        for statement in statements:
+            try:
+                cursor.execute(statement)
+                # Fetch results if any (for SELECT statements)
+                if cursor.description:
+                    cursor.fetchall()
+            except Error as stmt_error:
+                # Skip empty or comment-only statements
+                if statement and not statement.startswith('--'):
+                    raise stmt_error
+        
+        conn.commit()
+        return True, f"Successfully executed {file_path}"
+    except Error as e:
+        if conn:
+            conn.rollback()
+        return False, f"Error executing {file_path}: {e}"
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return False, f"Unexpected error: {e}"
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 # ==============================================================================
-# QUERY DEFINITIONS - Simple but Exhaustive
+# QUERY DEFINITIONS - All Parameterized
 # ==============================================================================
 
 QUERIES = {
-    "Overview": {
-        "Database Summary": """
-            SELECT 'Total Universes' as Metric, COUNT(*) as Value FROM Universe
-            UNION ALL SELECT 'Total Participants', COUNT(*) FROM Participant
-            UNION ALL SELECT 'Total Members', COUNT(*) FROM Member
-            UNION ALL SELECT 'Active Members', COUNT(*) FROM Member WHERE status = 'active'
-            UNION ALL SELECT 'Total Employees', COUNT(*) FROM Employee
-            UNION ALL SELECT 'Total Portals', COUNT(*) FROM Portals
-            UNION ALL SELECT 'Total Transactions', COUNT(*) FROM Transaction;
-        """,
-        "Members by Tier": """
+    "Retrieval - Selection": {
+        "Members by Tier & Time Period": """
             SELECT 
+                m.participant_id as Member_ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Member_Name,
                 m.tier_level as Tier,
-                COUNT(*) as Total_Members,
-                it.commission_rate as Commission_Rate,
-                it.minimum_investment as Min_Investment
+                m.total_recruits as Total_Recruits,
+                m.join_date as Join_Date,
+                u.universe_name as Universe
             FROM Member m
-            JOIN InvestmentTier it ON m.tier_level = it.tier_id
-            GROUP BY m.tier_level
-            ORDER BY m.tier_level;
-        """,
-        "Universe Statistics": """
-            SELECT 
-                u.universe_name as Universe,
-                COUNT(DISTINCT p.participant_id) as Total_Participants,
-                COUNT(DISTINCT m.participant_id) as Members,
-                u.status as Status
-            FROM Universe u
-            LEFT JOIN Participant p ON u.universe_id = p.universe_id
-            LEFT JOIN Member m ON p.participant_id = m.participant_id
-            GROUP BY u.universe_id
-            ORDER BY Members DESC;
+            JOIN Participant p ON m.participant_id = p.participant_id
+            JOIN Universe u ON p.universe_id = u.universe_id
+            WHERE m.tier_level = %s 
+            AND m.join_date BETWEEN %s AND %s
+            ORDER BY m.join_date DESC;
         """
     },
     
-    "Members": {
-        "All Members": """
+    "Retrieval - Projection": {
+        "Active Participant Names & Contacts": """
             SELECT 
                 p.participant_id as ID,
-                CONCAT(p.first_name, ' ', p.last_name) as Name,
+                CONCAT(p.first_name, ' ', p.last_name) as Full_Name,
+                p.date_of_birth as DOB,
                 u.universe_name as Universe,
-                m.tier_level as Tier,
-                m.total_recruits as Recruits,
-                m.join_date as Joined,
-                m.status as Status
-            FROM Member m
-            JOIN Participant p ON m.participant_id = p.participant_id
+                p.planet as Planet,
+                p.country as Country
+            FROM Participant p
             JOIN Universe u ON p.universe_id = u.universe_id
-            ORDER BY m.tier_level, m.join_date
-            LIMIT 50;
-        """,
-        "Top 20 Recruiters": """
-            SELECT 
-                CONCAT(p.first_name, ' ', p.last_name) as Name,
-                u.universe_name as Universe,
-                m.tier_level as Tier,
-                m.total_recruits as Recruits
-            FROM Member m
-            JOIN Participant p ON m.participant_id = p.participant_id
-            JOIN Universe u ON p.universe_id = u.universe_id
-            WHERE m.total_recruits > 0
-            ORDER BY m.total_recruits DESC
-            LIMIT 20;
-        """,
-        "Tier 1 Founders": """
-            SELECT 
-                CONCAT(p.first_name, ' ', p.last_name) as Founder,
-                u.universe_name as Universe,
-                m.total_recruits as Recruits,
-                m.join_date as Founded
-            FROM Member m
-            JOIN Participant p ON m.participant_id = p.participant_id
-            JOIN Universe u ON p.universe_id = u.universe_id
-            WHERE m.tier_level = 1
-            ORDER BY u.universe_name;
-        """,
-        "Recent Recruits": """
-            SELECT 
-                CONCAT(p.first_name, ' ', p.last_name) as Name,
-                u.universe_name as Universe,
-                m.tier_level as Tier,
-                m.join_date as Joined
-            FROM Member m
-            JOIN Participant p ON m.participant_id = p.participant_id
-            JOIN Universe u ON p.universe_id = u.universe_id
-            ORDER BY m.join_date DESC
-            LIMIT 20;
+            WHERE p.participant_id IN (
+                SELECT participant_id FROM Member WHERE status = 'active'
+            )
+            ORDER BY p.last_name, p.first_name;
         """
     },
     
-    "Finances": {
-        "Transaction Summary": """
+    "Retrieval - Aggregate SUM": {
+        "Total Revenue by Tier & Year": """
             SELECT 
-                transaction_type as Type,
-                COUNT(*) as Count,
-                SUM(amount) as Total,
-                ROUND(AVG(amount), 2) as Average
-            FROM Transaction
-            GROUP BY transaction_type
-            ORDER BY Total DESC;
-        """,
-        "Top Commission Earners": """
-            SELECT 
-                CONCAT(p.first_name, ' ', p.last_name) as Member,
-                m.tier_level as Tier,
-                SUM(t.amount) as Total_Commission
-            FROM Transaction t
-            JOIN Member m ON t.to_member_id = m.participant_id
-            JOIN Participant p ON m.participant_id = p.participant_id
-            WHERE t.transaction_type = 'commission'
-            GROUP BY m.participant_id
-            ORDER BY Total_Commission DESC
-            LIMIT 15;
-        """,
-        "Investment by Tier": """
-            SELECT 
-                m.tier_level as Tier,
-                COUNT(DISTINCT t.from_member_id) as Investors,
-                SUM(t.amount) as Total_Investment
+                SUM(t.amount) as Total_Revenue,
+                COUNT(t.transaction_id) as Transaction_Count
             FROM Transaction t
             JOIN Member m ON t.from_member_id = m.participant_id
-            WHERE t.transaction_type = 'investment'
-            GROUP BY m.tier_level
-            ORDER BY m.tier_level;
-        """,
-        "Recent Transactions": """
+            WHERE m.tier_level = %s
+            AND YEAR(t.transaction_date) = %s
+            AND t.transaction_type = 'investment'
+            AND t.status = 'completed';
+        """
+    },
+    
+    "Retrieval - Aggregate MAX": {
+        "Highest Revenue Member by Tier & Period": """
             SELECT 
-                t.transaction_id as ID,
-                t.transaction_type as Type,
+                m.participant_id as Member_ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Member_Name,
+                m.tier_level as Tier,
+                SUM(t.amount) as Total_Revenue
+            FROM Member m
+            JOIN Participant p ON m.participant_id = p.participant_id
+            JOIN Transaction t ON m.participant_id = t.from_member_id
+            WHERE m.tier_level = %s
+            AND t.transaction_date BETWEEN %s AND %s
+            AND t.status = 'completed'
+            GROUP BY m.participant_id
+            ORDER BY Total_Revenue DESC
+            LIMIT 1;
+        """
+    },
+    
+    "Retrieval - Aggregate MIN": {
+        "Lowest Revenue Member by Tier & Period": """
+            SELECT 
+                m.participant_id as Member_ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Member_Name,
+                m.tier_level as Tier,
+                SUM(t.amount) as Total_Revenue
+            FROM Member m
+            JOIN Participant p ON m.participant_id = p.participant_id
+            JOIN Transaction t ON m.participant_id = t.from_member_id
+            WHERE m.tier_level = %s
+            AND t.transaction_date BETWEEN %s AND %s
+            AND t.status = 'completed'
+            GROUP BY m.participant_id
+            ORDER BY Total_Revenue ASC
+            LIMIT 1;
+        """
+    },
+    
+    "Retrieval - Time Range": {
+        "Members Recruited in Time Range": """
+            SELECT 
+                re.recruit_id as Recruited_Member_ID,
+                CONCAT(p1.first_name, ' ', p1.last_name) as Recruited_Member_Name,
+                m.tier_level as Tier,
+                re.recruitment_date as Recruitment_Date,
+                re.recruiter_id as Recruiter_ID,
+                CONCAT(p2.first_name, ' ', p2.last_name) as Recruiter_Name,
+                re.recruitment_method as Method
+            FROM RecruitmentEvent re
+            JOIN Member m ON re.recruit_id = m.participant_id
+            JOIN Participant p1 ON re.recruit_id = p1.participant_id
+            LEFT JOIN Participant p2 ON re.recruiter_id = p2.participant_id
+            WHERE re.recruitment_date BETWEEN %s AND %s
+            ORDER BY re.recruitment_date DESC;
+        """
+    },
+    
+    "Retrieval - Search": {
+        "Search Participants by Name": """
+            SELECT 
+                p.participant_id as ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Full_Name,
+                p.date_of_birth as DOB,
+                u.universe_name as Universe,
+                p.country as Country
+            FROM Participant p
+            JOIN Universe u ON p.universe_id = u.universe_id
+            WHERE CONCAT(p.first_name, ' ', p.last_name) LIKE CONCAT('%%', %s, '%%')
+            ORDER BY p.last_name, p.first_name;
+        """
+    },
+    
+    "Retrieval - View Tables": {
+        "View All Members": """
+            SELECT 
+                m.participant_id as Member_ID,
+                m.tier_level as Tier,
+                m.total_recruits as Total_Recruits,
+                m.join_date as Join_Date,
+                m.status as Status
+            FROM Member m
+            ORDER BY m.tier_level, m.join_date;
+        """,
+        "View Orphaned Members": """
+            SELECT 
+                m.participant_id as Orphaned_Member_ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Member_Name,
+                m.tier_level as Tier,
+                m.join_date as Join_Date,
+                m.status as Status,
+                u.universe_name as Universe
+            FROM Member m
+            JOIN Participant p ON m.participant_id = p.participant_id
+            JOIN Universe u ON p.universe_id = u.universe_id
+            WHERE m.recruiter_id IS NULL
+            AND m.tier_level > 1
+            ORDER BY m.join_date;
+        """,
+        "View All Recruitment Events": """
+            SELECT 
+                re.recruit_id as Recruited_Member_ID,
+                CONCAT(p1.first_name, ' ', p1.last_name) as Recruited_Member_Name,
+                re.recruiter_id as Recruiter_ID,
+                CONCAT(p2.first_name, ' ', p2.last_name) as Recruiter_Name,
+                re.recruitment_date as Recruitment_Date,
+                re.recruitment_method as Method
+            FROM RecruitmentEvent re
+            JOIN Participant p1 ON re.recruit_id = p1.participant_id
+            LEFT JOIN Participant p2 ON re.recruiter_id = p2.participant_id
+            ORDER BY re.recruitment_date DESC;
+        """,
+        "View All Transactions": """
+            SELECT 
+                t.transaction_id as Transaction_ID,
+                t.from_member_id as From_Member,
+                t.to_member_id as To_Member,
                 t.amount as Amount,
+                t.transaction_type as Type,
                 t.transaction_date as Date,
                 t.status as Status
             FROM Transaction t
-            ORDER BY t.transaction_date DESC
-            LIMIT 30;
+            ORDER BY t.transaction_date DESC;
         """
     },
     
-    "Portals": {
-        "All Portals": """
+    "Analysis Reports": {
+        "Recruitment Count per Manager": """
             SELECT 
-                p.portal_id as ID,
-                u1.universe_name as From_Universe,
-                u2.universe_name as To_Universe,
-                p.status as Status,
-                p.cost as Cost
-            FROM Portals p
-            JOIN Universe u1 ON p.source_universe_id = u1.universe_id
-            JOIN Universe u2 ON p.target_universe_id = u2.universe_id
-            ORDER BY u1.universe_name;
-        """,
-        "Portal Status": """
-            SELECT 
-                status as Status,
-                COUNT(*) as Count,
-                SUM(cost) as Total_Cost
-            FROM Portals
-            GROUP BY status;
-        """,
-        "Recent Calibrations": """
-            SELECT 
-                pc.calibration_code as Code,
-                u1.universe_name as Source,
-                u2.universe_name as Target,
-                pc.calibration_timestamp as Timestamp
-            FROM PortalCalibration pc
-            JOIN Portals po ON pc.portal_id = po.portal_id
-            JOIN Universe u1 ON po.source_universe_id = u1.universe_id
-            JOIN Universe u2 ON po.target_universe_id = u2.universe_id
-            ORDER BY pc.calibration_timestamp DESC
-            LIMIT 20;
-        """
-    },
-    
-    "Employees": {
-        "All Employees": """
-            SELECT 
-                e.participant_id as ID,
-                CONCAT(p.first_name, ' ', p.last_name) as Name,
+                e.participant_id as Manager_ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Manager_Name,
                 e.role as Role,
-                e.access_level as Level,
-                e.salary as Salary,
-                e.status as Status
+                COUNT(re.recruit_id) as Total_Recruitments
             FROM Employee e
             JOIN Participant p ON e.participant_id = p.participant_id
-            ORDER BY e.access_level, e.salary DESC;
-        """,
-        "By Access Level": """
-            SELECT 
-                e.access_level as Level,
-                COUNT(*) as Count,
-                ROUND(AVG(e.salary), 2) as Avg_Salary
-            FROM Employee e
-            GROUP BY e.access_level
-            ORDER BY e.access_level;
-        """,
-        "Engineers": """
-            SELECT 
-                CONCAT(p.first_name, ' ', p.last_name) as Engineer,
-                e.role as Role,
-                COUNT(DISTINCT po.portal_id) as Portals_Managed
-            FROM Employee e
-            JOIN Participant p ON e.participant_id = p.participant_id
-            LEFT JOIN Portals po ON e.participant_id = po.engineer_id
-            WHERE e.role LIKE '%Engineer%'
+            LEFT JOIN RecruitmentEvent re ON re.recruitment_date BETWEEN %s AND %s
+            WHERE e.role LIKE '%%Recruitment%%'
             GROUP BY e.participant_id
-            ORDER BY Portals_Managed DESC;
-        """
-    },
-    
-    "Campaigns": {
-        "All Campaigns": """
-            SELECT 
-                mc.program_id as ID,
-                mc.program_code as Code,
-                mca.name as Campaign_Name,
-                mca.budget as Budget,
-                mca.status as Status
-            FROM MarketingCampaign mc
-            JOIN MarketingCampaignAdditional mca ON mc.program_code = mca.program_code
-            ORDER BY mca.start_date DESC;
+            ORDER BY Total_Recruitments DESC;
         """,
-        "Active Campaigns": """
+        "Transaction Value per Finance Manager": """
             SELECT 
-                mca.name as Campaign,
-                u.universe_name as Universe,
-                mca.budget as Budget,
-                mca.start_date as Started,
-                mca.end_date as Ends
-            FROM MarketingCampaignAdditional mca
-            JOIN MarketingCampaign mc ON mca.program_code = mc.program_code
-            JOIN Universe u ON mca.universe_id = u.universe_id
-            WHERE mca.status = 'active';
-        """
-    },
-    
-    "Analytics": {
-        "Recruitment Efficiency": """
-            SELECT 
-                u.universe_name as Universe,
-                COUNT(DISTINCT m.participant_id) as Total_Members,
-                COUNT(DISTINCT re.recruit_id) as Total_Recruits,
-                ROUND(AVG(m.total_recruits), 2) as Avg_Recruits_Per_Member,
-                MAX(m.total_recruits) as Max_Recruits
-            FROM Universe u
-            LEFT JOIN Participant p ON u.universe_id = p.universe_id
-            LEFT JOIN Member m ON p.participant_id = m.participant_id
-            LEFT JOIN RecruitmentEvent re ON m.participant_id = re.recruiter_id
-            GROUP BY u.universe_id
-            ORDER BY Total_Members DESC;
+                e.participant_id as Manager_ID,
+                CONCAT(p.first_name, ' ', p.last_name) as Manager_Name,
+                e.role as Role,
+                COUNT(t.transaction_id) as Transaction_Count,
+                SUM(t.amount) as Total_Value
+            FROM Employee e
+            JOIN Participant p ON e.participant_id = p.participant_id
+            LEFT JOIN Transaction t ON t.transaction_date BETWEEN %s AND %s
+            WHERE e.role LIKE '%%Finance%%'
+            GROUP BY e.participant_id
+            ORDER BY Total_Value DESC;
         """,
-        "Tier Performance": """
+        "Revenue Breakdown by Tier & Recruit Count": """
             SELECT 
-                it.tier_id as Tier,
+                m.tier_level as Tier,
                 COUNT(m.participant_id) as Member_Count,
-                it.minimum_investment as Min_Investment,
-                it.commission_rate as Commission_Rate,
                 SUM(m.total_recruits) as Total_Recruits,
-                ROUND(AVG(m.total_recruits), 2) as Avg_Recruits
-            FROM InvestmentTier it
-            LEFT JOIN Member m ON it.tier_id = m.tier_level
-            GROUP BY it.tier_id
-            ORDER BY it.tier_id;
-        """,
-        "Portal Usage Analysis": """
-            SELECT 
-                u.universe_name as Universe,
-                COUNT(DISTINCT CASE WHEN p.status = 'active' THEN p.portal_id END) as Active_Portals,
-                COUNT(DISTINCT CASE WHEN p.status = 'maintenance' THEN p.portal_id END) as Maintenance,
-                COUNT(DISTINCT CASE WHEN p.status = 'closed' THEN p.portal_id END) as Closed,
-                COUNT(DISTINCT pc.calibration_code) as Total_Calibrations
-            FROM Universe u
-            LEFT JOIN Portals p ON u.universe_id = p.source_universe_id
-            LEFT JOIN PortalCalibration pc ON p.portal_id = pc.portal_id
-            GROUP BY u.universe_id
-            ORDER BY Active_Portals DESC;
-        """,
-        "Revenue by Universe": """
-            SELECT 
-                u.universe_name as Universe,
-                COUNT(DISTINCT t.transaction_id) as Transaction_Count,
-                SUM(CASE WHEN t.transaction_type = 'investment' THEN t.amount ELSE 0 END) as Total_Investment,
-                SUM(CASE WHEN t.transaction_type = 'commission' THEN t.amount ELSE 0 END) as Total_Commission,
-                SUM(CASE WHEN t.transaction_type = 'bonus' THEN t.amount ELSE 0 END) as Total_Bonus
-            FROM Universe u
-            LEFT JOIN Participant p ON u.universe_id = p.universe_id
-            LEFT JOIN Member m ON p.participant_id = m.participant_id
-            LEFT JOIN Transaction t ON m.participant_id = t.from_member_id OR m.participant_id = t.to_member_id
-            GROUP BY u.universe_id
-            ORDER BY Total_Investment DESC;
-        """,
-        "Monthly Growth": """
-            SELECT 
-                DATE_FORMAT(join_date, '%Y-%m') as Month,
-                COUNT(*) as New_Members,
-                SUM(COUNT(*)) OVER (ORDER BY DATE_FORMAT(join_date, '%Y-%m')) as Cumulative_Members
-            FROM Member
-            GROUP BY DATE_FORMAT(join_date, '%Y-%m')
-            ORDER BY Month DESC
-            LIMIT 12;
+                SUM(t.amount) as Total_Revenue,
+                ROUND(AVG(t.amount), 2) as Avg_Revenue_Per_Member
+            FROM Member m
+            LEFT JOIN Transaction t ON m.participant_id = t.from_member_id 
+                AND t.status = 'completed'
+                AND t.transaction_type = 'investment'
+            GROUP BY m.tier_level
+            ORDER BY m.tier_level;
         """
     },
     
-    "Modify": {
-        "Activate Member": """
-            UPDATE Member 
-            SET status = 'active' 
-            WHERE participant_id = ? AND status = 'suspended';
+    "Modification - Insert": {
+        "Insert New Member": """
+            INSERT INTO Member (participant_id, tier_level, recruiter_id, total_recruits, join_date, status)
+            VALUES (%s, %s, %s, 0, CURDATE(), 'active');
         """,
-        "Suspend Member": """
-            UPDATE Member 
-            SET status = 'suspended' 
-            WHERE participant_id = ? AND status = 'active';
-        """,
-        "Update Member Tier": """
-            UPDATE Member 
-            SET tier_level = ? 
-            WHERE participant_id = ?;
-        """,
-        "Activate Portal": """
-            UPDATE Portals 
-            SET status = 'active' 
-            WHERE portal_id = ? AND status IN ('maintenance', 'closed');
-        """,
-        "Close Portal": """
-            UPDATE Portals 
-            SET status = 'closed' 
-            WHERE portal_id = ? AND status = 'active';
-        """,
-        "Set Portal Maintenance": """
-            UPDATE Portals 
-            SET status = 'maintenance' 
-            WHERE portal_id = ? AND status = 'active';
-        """,
-        "Update Portal Cost": """
-            UPDATE Portals 
-            SET cost = ? 
-            WHERE portal_id = ?;
-        """,
-        "Complete Pending Transaction": """
-            UPDATE Transaction 
-            SET status = 'completed' 
-            WHERE transaction_id = ? AND status = 'pending';
-        """,
-        "Cancel Transaction": """
-            UPDATE Transaction 
-            SET status = 'cancelled' 
-            WHERE transaction_id = ? AND status = 'pending';
-        """,
-        "Update Employee Salary": """
-            UPDATE Employee 
-            SET salary = ? 
-            WHERE participant_id = ?;
-        """,
-        "Change Employee Status": """
-            UPDATE Employee 
-            SET status = 'inactive' 
-            WHERE participant_id = ? AND status = 'active';
-        """,
-        "Update Campaign Status": """
-            UPDATE MarketingCampaignAdditional 
-            SET status = ? 
-            WHERE program_code = ?;
-        """,
-        "Increment Member Recruits": """
-            UPDATE Member 
-            SET total_recruits = total_recruits + 1 
-            WHERE participant_id = ?;
-        """,
-        "Update Universe Status": """
-            UPDATE Universe 
-            SET status = ? 
-            WHERE universe_id = ?;
-        """,
-        "Assign Portal Engineer": """
-            UPDATE Portals 
-            SET engineer_id = ? 
-            WHERE portal_id = ?;
+        "Record Recruitment Event": """
+            INSERT INTO RecruitmentEvent (recruit_id, recruiter_id, recruitment_date, recruitment_method)
+            VALUES (%s, %s, CURDATE(), %s);
+        """
+    },
+    
+    "Modification - Delete": {
+        "Delete Member": """
+            DELETE FROM Member 
+            WHERE participant_id = %s;
         """
     }
 }
@@ -567,6 +477,22 @@ class VoughtDatabaseGUI:
         )
         self.theme_btn.pack(side='right', padx=20)
         
+        # Start/Reset button
+        self.reset_btn = tk.Button(
+            self.header_frame,
+            text="Start/Reset",
+            command=self.reset_database,
+            bg='#dc2626' if self.is_dark_mode else '#b91c1c',
+            fg='#ffffff',
+            font=('Segoe UI', 11, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            borderwidth=0,
+            padx=15,
+            pady=8
+        )
+        self.reset_btn.pack(side='right', padx=10)
+        
         # Main container
         self.main_container = tk.Frame(self.root, bg=theme['bg'])
         self.main_container.pack(fill='both', expand=True, padx=0, pady=0)
@@ -651,7 +577,9 @@ class VoughtDatabaseGUI:
             
             # Add queries to container
             for query_name, query_sql in queries.items():
-                is_modify = category == "Modify"
+                # Determine if it's a modification query (INSERT, UPDATE, DELETE)
+                is_modify = any(keyword in query_sql.upper()[:20] for keyword in ['INSERT', 'UPDATE', 'DELETE'])
+                
                 btn = tk.Button(
                     queries_container,
                     text=query_name,
@@ -794,6 +722,11 @@ class VoughtDatabaseGUI:
             fg='#ffffff' if self.is_dark_mode else '#2c2416'
         )
         
+        # Update reset button
+        self.reset_btn.configure(
+            bg='#dc2626' if self.is_dark_mode else '#b91c1c'
+        )
+        
         # Update main container
         self.main_container.configure(bg=theme['bg'])
         
@@ -839,15 +772,59 @@ class VoughtDatabaseGUI:
         # Update treeview
         self.apply_tree_theme()
     
-    def handle_query(self, query, query_name, category, is_modify):
-        """Handle both SELECT and UPDATE queries"""
-        if is_modify:
-            self.execute_modify_query(query, query_name, category)
-        else:
-            self.execute_and_display(query, query_name, category)
+    def reset_database(self):
+        """Execute schema.sql and populate.sql to reset the database"""
+        # Confirm with user
+        confirm = messagebox.askyesno(
+            "Reset Database",
+            "This will DROP and recreate the VoughDB database. All existing data will be lost! Do you want to continue?"
+        )
+        
+        if not confirm:
+            return
+        
+        # Get the directory where main_app.py is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        schema_path = os.path.join(script_dir, 'schema.sql')
+        populate_path = os.path.join(script_dir, 'populate.sql')
+        
+        # Execute schema.sql (creates database and tables)
+        success, message = execute_sql_file(schema_path)
+        if not success:
+            messagebox.showerror("Schema Error", message)
+            return
+        
+        # Execute populate.sql (loads data into VoughDB)
+        success, message = execute_sql_file(populate_path)
+        if not success:
+            messagebox.showerror("Populate Error", message)
+            return
+        
+        messagebox.showinfo("Success", "Database has been reset successfully!Schema and sample data loaded.")
+        
+        # Clear any existing results
+        if hasattr(self, 'tree'):
+            for item in self.tree.get_children():
+                self.tree.delete(item)
     
-    def execute_modify_query(self, query, query_name, category):
-        """Execute UPDATE query with parameter input"""
+    def handle_query(self, query, query_name, category, is_modify):
+        """Handle both SELECT and UPDATE queries - all are now parameterized"""
+        # Count parameters needed
+        param_count = query.count('%s')
+        
+        if param_count == 0:
+            # No parameters needed, execute directly
+            if is_modify:
+                success, message = execute_update(query)
+                messagebox.showinfo("Result", message)
+            else:
+                self.execute_and_display(query, query_name, category, None)
+        else:
+            # Show parameter input dialog
+            self.show_parameter_dialog(query, query_name, category, is_modify, param_count)
+    
+    def show_parameter_dialog(self, query, query_name, category, is_modify, param_count):
+        """Show parameter input dialog for any query"""
         theme = self.get_theme()
         self.category_label.config(text=category)
         self.query_title_label.config(text=query_name)
@@ -855,19 +832,16 @@ class VoughtDatabaseGUI:
         # Clear previous results
         self.tree.delete(*self.tree.get_children())
         
-        # Count parameters needed
-        param_count = query.count('?')
-        
-        if param_count == 0:
-            # No parameters needed, execute directly
-            success, message = execute_update(query)
-            messagebox.showinfo("Result", message)
-            return
-        
         # Create input dialog
         dialog = tk.Toplevel(self.root)
         dialog.title(f"Enter Parameters - {query_name}")
-        dialog.geometry("450x350")
+        
+        # Adjust dialog size based on parameter count
+        dialog_height = 200 + (param_count * 80)
+        dialog.geometry(f"500x{dialog_height}")
+        dialog.configure(bg=theme['dialog_bg'])
+        dialog.transient(self.root)
+        dialog.grab_set()
         dialog.configure(bg=theme['dialog_bg'])
         dialog.transient(self.root)
         dialog.grab_set()
@@ -930,14 +904,31 @@ class VoughtDatabaseGUI:
         
         def execute():
             try:
-                params = tuple(entry.get() for entry in entries)
-                if not all(params):
+                params = list(entry.get().strip() for entry in entries)
+                if not all(param != '' for param in params):
                     messagebox.showwarning("Missing Parameters", "Please fill all fields")
                     return
                 
-                success, message = execute_update(query, params)
+                # Handle special case for Insert New Member - convert '0' or 'NULL' to None for recruiter_id
+                if query_name == "Insert New Member" and len(params) >= 3:
+                    if params[2] == '0' or params[2].upper() == 'NULL':
+                        params[2] = None
+                
+                # Handle special case for Record Recruitment Event - convert '0' or 'NULL' to None for recruiter_id
+                if query_name == "Record Recruitment Event" and len(params) >= 2:
+                    if params[1] == '0' or params[1].upper() == 'NULL':
+                        params[1] = None
+                
+                params = tuple(params)
                 dialog.destroy()
-                messagebox.showinfo("Result", message)
+                
+                if is_modify:
+                    # Execute modification query
+                    success, message = execute_update(query, params)
+                    messagebox.showinfo("Result", message)
+                else:
+                    # Execute retrieval query and display results
+                    self.execute_and_display(query, query_name, category, params)
                 
             except Exception as e:
                 messagebox.showerror("Error", str(e))
@@ -979,21 +970,34 @@ class VoughtDatabaseGUI:
     def get_parameter_labels(self, query_name, param_count):
         """Return friendly labels for parameters"""
         labels_map = {
-            "Activate Member": ["Member ID"],
-            "Suspend Member": ["Member ID"],
-            "Update Member Tier": ["New Tier (1-7)", "Member ID"],
-            "Activate Portal": ["Portal ID"],
-            "Close Portal": ["Portal ID"],
-            "Set Portal Maintenance": ["Portal ID"],
-            "Update Portal Cost": ["New Cost", "Portal ID"],
-            "Complete Pending Transaction": ["Transaction ID"],
-            "Cancel Transaction": ["Transaction ID"],
-            "Update Employee Salary": ["New Salary", "Employee ID"],
-            "Change Employee Status": ["Employee ID"],
-            "Update Campaign Status": ["New Status", "Program Code"],
-            "Increment Member Recruits": ["Member ID"],
-            "Update Universe Status": ["New Status", "Universe ID"],
-            "Assign Portal Engineer": ["Engineer ID", "Portal ID"]
+            # Retrieval - Selection
+            "Members by Tier & Time Period": ["Tier Level (1-7)", "Start Date (YYYY-MM-DD)", "End Date (YYYY-MM-DD)"],
+            
+            # Retrieval - Aggregate SUM
+            "Total Revenue by Tier & Year": ["Tier Level (1-7)", "Year (YYYY)"],
+            
+            # Retrieval - Aggregate MAX
+            "Highest Revenue Member by Tier & Period": ["Tier Level (1-7)", "Start Date (YYYY-MM-DD)", "End Date (YYYY-MM-DD)"],
+            
+            # Retrieval - Aggregate MIN
+            "Lowest Revenue Member by Tier & Period": ["Tier Level (1-7)", "Start Date (YYYY-MM-DD)", "End Date (YYYY-MM-DD)"],
+            
+            # Retrieval - Time Range
+            "Members Recruited in Time Range": ["Start Date (YYYY-MM-DD)", "End Date (YYYY-MM-DD)"],
+            
+            # Retrieval - Search
+            "Search Participants by Name": ["Name or Partial Name"],
+            
+            # Analysis Reports
+            "Recruitment Count per Manager": ["Start Date (YYYY-MM-DD)", "End Date (YYYY-MM-DD)"],
+            "Transaction Value per Finance Manager": ["Start Date (YYYY-MM-DD)", "End Date (YYYY-MM-DD)"],
+            
+            # Modification - Insert
+            "Insert New Member": ["Participant ID", "Tier Level (1-7)", "Recruiter ID (0 or NULL if none)"],
+            "Record Recruitment Event": ["Recruit ID (New Member)", "Recruiter ID (0 or NULL if none)", "Recruitment Method"],
+            
+            # Modification - Delete
+            "Delete Member": ["Member Participant ID to Delete"]
         }
         
         if query_name in labels_map:
@@ -1002,7 +1006,7 @@ class VoughtDatabaseGUI:
         # Default labels
         return [f"Parameter {i+1}" for i in range(param_count)]
     
-    def execute_and_display(self, query, query_name, category):
+    def execute_and_display(self, query, query_name, category, params=None):
         """Execute query and display results"""
         self.category_label.config(text=category)
         self.query_title_label.config(text=query_name)
@@ -1011,7 +1015,7 @@ class VoughtDatabaseGUI:
         self.tree.delete(*self.tree.get_children())
         
         # Execute query
-        columns, results = execute_query(query)
+        columns, results = execute_query(query, params)
         
         if columns is None:
             return
